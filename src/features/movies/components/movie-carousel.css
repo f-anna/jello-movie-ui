@@ -1,0 +1,59 @@
+.movie-carousel-container {
+  margin: 2rem 0;
+  padding: 0 4rem;
+}
+
+.movie-carousel-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.movie-carousel {
+  padding: 1rem 0;
+  position: relative;
+}
+
+.movie-carousel .p-carousel-content {
+  padding: 1rem 0;
+}
+
+.movie-carousel .p-carousel-item {
+  display: flex;
+  align-items: stretch;
+  width: 250px;
+  max-width: 250px;
+  flex-shrink: 0;
+}
+
+.movie-carousel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.movie-carousel-empty p {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: var(--text-color-secondary);
+}
+
+/* Adjust carousel navigation buttons */
+.movie-carousel .p-carousel-prev,
+.movie-carousel .p-carousel-next {
+  z-index: 2;
+  background-color: rgba(60, 96, 224, 0.729);
+  color: white;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+}
+
+.movie-carousel .p-carousel-prev:hover,
+.movie-carousel .p-carousel-next:hover {
+  background-color: rgba(116, 148, 235, 0.837);
+}

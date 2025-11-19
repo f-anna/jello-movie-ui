@@ -1,0 +1,12 @@
+export { MovieDetail } from './movie-detail';
+export { MovieHeader } from './movie-header';
+export { MovieMetadata } from './movie-metadata';
+export { MovieSynopsis } from './movie-synopsis';
+export { MoviePoster } from './movie-poster';
+export { MovieRating } from './movie-rating';
+export { MovieActions } from './movie-actions';
+export { MovieImages } from './movie-images';
+export { MovieImportForm } from './movie-import-form';
+export { MovieList } from './movie-list';
+export { MovieCarousel } from './movie-carousel';
+export { MovieCard } from './movie-card';

@@ -16,7 +16,7 @@ import './movie-detail.css';
 
 export const MovieDetail = () => {
   const { id } = useParams();
-  const { movie, loading, error } = useMovieDetails(id);
+  const { movie, images, loading, error } = useMovieDetails(id);
 
   if (loading) {
     return (
@@ -55,8 +55,7 @@ export const MovieDetail = () => {
     return date.getFullYear();
   };
 
-  //TODO: fix genre on the backend
-  const genres = ['Historical', 'Thriller', 'Romance'];
+  const genres = movie.genres?.map(g => g.genreName) || [];
 
   return (
     <div className="movie-detail-page">
@@ -73,13 +72,13 @@ export const MovieDetail = () => {
               <MovieSynopsis overview={movie.overview} genres={genres} />
             </Card>
 
-            <MovieImages />
+            <MovieImages images={images} />
           </div>
 
           <div className="movie-sidebar">
             <MoviePoster movie={movie} />
 
-            <MovieActions movieId={movie.id} />
+            <MovieActions movieId={movie.id} movieTitle={movie.title} />
 
             <div className="movie-rating-section">
               <span className="rating-label">Rate:</span>

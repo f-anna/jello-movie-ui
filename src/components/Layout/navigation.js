@@ -39,6 +39,11 @@ export const Navigation = () => {
         },
       ],
     },
+    {
+      label: 'My Lists',
+      icon: 'pi pi-bookmark',
+      command: () => navigate('/lists'),
+    },
   ];
 
   const start = (

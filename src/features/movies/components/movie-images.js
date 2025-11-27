@@ -1,63 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Galleria } from 'primereact/galleria';
 import { Card } from 'primereact/card';
 
-export const MovieImages = ({ images = [] }) => {
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
+
+export const MovieImages = ({ images }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   
-  // Generate placeholder images if none provided
-  const displayImages = images.length > 0 ? images : [
-    { itemImageSrc: null, thumbnailImageSrc: null, alt: 'Image 1' },
-    { itemImageSrc: null, thumbnailImageSrc: null, alt: 'Image 2' },
-    { itemImageSrc: null, thumbnailImageSrc: null, alt: 'Image 3' },
-    { itemImageSrc: null, thumbnailImageSrc: null, alt: 'Image 4' },
-  ];
+  // Transform TMDB images to Galleria format
+  const displayImages = useMemo(() => {
+    if (!images) return [];
+    
+    const allImages = [];
+    
+    // Add backdrops
+    if (images.backdrops?.length > 0) {
+      images.backdrops.forEach((backdrop, index) => {
+        allImages.push({
+          itemImageSrc: `${TMDB_IMAGE_BASE_URL}/original${backdrop.filePath}`,
+          thumbnailImageSrc: `${TMDB_IMAGE_BASE_URL}/w185${backdrop.filePath}`,
+          alt: `Backdrop ${index + 1}`,
+          type: 'backdrop'
+        });
+      });
+    }
+    
+    // Add posters
+    if (images.posters?.length > 0) {
+      images.posters.forEach((poster, index) => {
+        allImages.push({
+          itemImageSrc: `${TMDB_IMAGE_BASE_URL}/original${poster.filePath}`,
+          thumbnailImageSrc: `${TMDB_IMAGE_BASE_URL}/w185${poster.filePath}`,
+          alt: `Poster ${index + 1}`,
+          type: 'poster'
+        });
+      });
+    }
+    
+    // Add logos
+    if (images.logos?.length > 0) {
+      images.logos.forEach((logo, index) => {
+        allImages.push({
+          itemImageSrc: `${TMDB_IMAGE_BASE_URL}/original${logo.filePath}`,
+          thumbnailImageSrc: `${TMDB_IMAGE_BASE_URL}/w185${logo.filePath}`,
+          alt: `Logo ${index + 1}`,
+          type: 'logo'
+        });
+      });
+    }
+    
+    return allImages;
+  }, [images]);
 
   const itemTemplate = (item) => {
-    if (!item.itemImageSrc) {
-      return (
-        <div 
-          className="flex align-items-center justify-content-center"
-          style={{
-            width: '100%',
-            height: '200px',
-            backgroundColor: '#e0e0e0',
-          }}
-        >
-          <i className="pi pi-image" style={{ fontSize: '4rem', color: '#999' }}></i>
-        </div>
-      );
-    }
     return (
       <img 
         src={item.itemImageSrc} 
         alt={item.alt} 
-        style={{ width: '100%', display: 'block' }} 
+        style={{ 
+          width: '100%',
+          maxHeight: '500px',
+          display: 'block',
+          objectFit: 'contain',
+          backgroundColor: item.type === 'logo' ? '#1a1a1a' : 'transparent'
+        }} 
       />
     );
   };
 
   const thumbnailTemplate = (item) => {
-    if (!item.thumbnailImageSrc) {
-      return (
-        <div 
-          className="flex align-items-center justify-content-center"
-          style={{
-            width: '80px',
-            height: '60px',
-            backgroundColor: '#f0f0f0',
-            cursor: 'pointer',
-          }}
-        >
-          <i className="pi pi-image" style={{ fontSize: '1.5rem', color: '#999' }}></i>
-        </div>
-      );
-    }
     return (
       <img 
         src={item.thumbnailImageSrc} 
         alt={item.alt} 
-        style={{ width: '80px', display: 'block', cursor: 'pointer' }} 
+        style={{ 
+          width: '80px', 
+          height: '60px',
+          display: 'block', 
+          cursor: 'pointer',
+          objectFit: 'cover'
+        }} 
       />
     );
   };
@@ -69,19 +91,21 @@ export const MovieImages = ({ images = [] }) => {
       </div>
 
       {displayImages.length > 0 ? (
-        <Galleria
-          value={displayImages}
-          activeIndex={activeIndex}
-          onItemChange={(e) => setActiveIndex(e.index)}
-          numVisible={4}
-          circular
-          showItemNavigators
-          showThumbnails
-          item={itemTemplate}
-          thumbnail={thumbnailTemplate}
-          style={{ maxWidth: '100%' }}
-          thumbnailsPosition="bottom"
-        />
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <Galleria
+            value={displayImages}
+            activeIndex={activeIndex}
+            onItemChange={(e) => setActiveIndex(e.index)}
+            numVisible={4}
+            circular
+            showItemNavigators
+            showThumbnails
+            item={itemTemplate}
+            thumbnail={thumbnailTemplate}
+            style={{ maxWidth: '100%' }}
+            thumbnailsPosition="bottom"
+          />
+        </div>
       ) : (
         <div 
           className="flex flex-column align-items-center justify-content-center p-4"

@@ -14,3 +14,8 @@ export const getMovieById = async (id) => {
   const response = await api.get(`/Movie/${id}`);
   return response.data;
 };
+
+export const getMovieImages = async (tmdbId) => {
+  const response = await api.get(`/tmdb/movie/${tmdbId}/images`);
+  return response.data;
+};

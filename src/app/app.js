@@ -6,6 +6,7 @@ import { Navigation } from '../components/Layout/navigation';
 const HomePage = lazy(() => import('../pages/home-page'));
 const MovieImportPage = lazy(() => import('../pages/movie-import-page'));
 const MovieDetailPage = lazy(() => import('../pages/movie-detail-page'));
+const ListsPage = lazy(() => import('../pages/lists-page'));
 const LoginPage = lazy(() => import('../pages/login-page'));
 const RegisterPage = lazy(() => import('../pages/register-page'));
 
@@ -25,6 +26,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/import" element={<MovieImportPage />} />
           <Route path="/movie/:id" element={<MovieDetailPage />} />
+          <Route path="/lists" element={<ListsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Routes>

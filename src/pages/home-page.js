@@ -2,6 +2,7 @@
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
 import { MovieCarousel } from '../features/movies/components/movie-carousel';
+import { UsersList } from '../features/users/components/users-list';
 import { getAllMovies } from '../features/movies/api/movie-api';
 import './home-page.css';
 
@@ -56,6 +57,8 @@ const HomePage = () => {
         movies={movies} 
         title="All Movies" 
       />
+      
+      <UsersList />
     </div>
   );
 };

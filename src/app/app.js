@@ -7,8 +7,11 @@ const HomePage = lazy(() => import('../pages/home-page'));
 const MovieImportPage = lazy(() => import('../pages/movie-import-page'));
 const MovieDetailPage = lazy(() => import('../pages/movie-detail-page'));
 const ListsPage = lazy(() => import('../pages/lists-page'));
+const ListDetailPage = lazy(() => import('../pages/list-detail-page'));
 const LoginPage = lazy(() => import('../pages/login-page'));
 const RegisterPage = lazy(() => import('../pages/register-page'));
+const TmdbSearchPage = lazy(() => import('../pages/tmdb-search-page'));
+const UserProfilePage = lazy(() => import('../pages/user-profile-page'));
 
 function App() {
   return (
@@ -27,8 +30,11 @@ function App() {
           <Route path="/import" element={<MovieImportPage />} />
           <Route path="/movie/:id" element={<MovieDetailPage />} />
           <Route path="/lists" element={<ListsPage />} />
+          <Route path="/list/:id" element={<ListDetailPage />} />
+          <Route path="/user/:userId" element={<UserProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/search/tmdb" element={<TmdbSearchPage />} />
         </Routes>
       </Suspense>
     </div>

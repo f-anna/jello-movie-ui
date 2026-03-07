@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -12,11 +12,13 @@ import { MoviePoster } from './movie-poster';
 import { MovieRating } from './movie-rating';
 import { MovieActions } from './movie-actions';
 import { MovieImages } from './movie-images';
+import { MoviePublicLists } from './movie-public-lists';
 import './movie-detail.css';
 
 export const MovieDetail = () => {
   const { id } = useParams();
   const { movie, images, loading, error } = useMovieDetails(id);
+  const movieActionsRef = useRef(null);
 
   if (loading) {
     return (
@@ -57,33 +59,58 @@ export const MovieDetail = () => {
 
   const genres = movie.genres?.map(g => g.genreName) || [];
 
+  const handleAddToList = () => {
+    movieActionsRef.current?.openAddToListDialog();
+  };
+
+  const handleEditStatus = () => {
+    movieActionsRef.current?.openEditStatusDialog();
+  };
+
   return (
     <div className="movie-detail-page">
       <div className="movie-detail-container">
-        <MovieHeader movie={movie} formatDate={formatDate} />
+        <MovieHeader 
+          movie={movie} 
+          formatDate={formatDate}
+        />
 
         <div className="movie-content-grid">
           <div className="movie-info-section">
             <Card className="movie-info-card">
-              <MovieMetadata movie={movie} formatDate={formatDate} formatLength={formatLength} />
+              <MovieMetadata 
+                movie={movie} 
+                formatDate={formatDate} 
+                formatLength={formatLength}
+                onAddToList={handleAddToList}
+                onEditStatus={handleEditStatus}
+              />
               
               <Divider />
 
-              <MovieSynopsis overview={movie.overview} genres={genres} />
+              <MovieSynopsis 
+                overview={movie.overview} 
+                genres={genres}
+                rating={movie.rating}
+                voteCount={movie.voteCount}
+              />
             </Card>
 
             <MovieImages images={images} />
+
+            <MoviePublicLists movieId={movie.id} />
           </div>
 
           <div className="movie-sidebar">
             <MoviePoster movie={movie} />
 
-            <MovieActions movieId={movie.id} movieTitle={movie.title} />
-
-            <div className="movie-rating-section">
-              <span className="rating-label">Rate:</span>
-              <MovieRating rating={movie.rating} voteCount={movie.voteCount} />
-            </div>
+            <MovieActions 
+              ref={movieActionsRef}
+              movieId={movie.id} 
+              movieTitle={movie.title} 
+              hideQuickActions 
+              hideButtons
+            />
           </div>
         </div>
       </div>

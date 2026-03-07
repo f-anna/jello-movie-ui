@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { useAuth } from '../../features/users/context/auth-context';
+import { SearchBar } from './search-bar';
+import './navigation.css';
 
 export const Navigation = () => {
   const navigate = useNavigate();
@@ -33,6 +35,11 @@ export const Navigation = () => {
           command: () => navigate('/'),
         },
         {
+          label: 'Search in TMDB',
+          icon: 'pi pi-search',
+          command: () => navigate('/search/tmdb'),
+        },
+        {
           label: 'Import Movie',
           icon: 'pi pi-plus',
           command: () => navigate('/import'),
@@ -56,10 +63,13 @@ export const Navigation = () => {
   );
 
   const end = (
-    <div className="flex align-items-center gap-2">
+    <div className="flex align-items-center gap-3">
+      <div className="search-bar-wrapper">
+        <SearchBar />
+      </div>
       {isAuthenticated ? (
         <>
-          <span className="text-sm text-color-secondary">
+          <span className="text-sm text-color-secondary hidden md:inline">
             {user?.email}
           </span>
           <Button
@@ -88,5 +98,5 @@ export const Navigation = () => {
     </div>
   );
 
-  return <Menubar model={items} start={start} end={end} className="mb-4" />;
+  return <Menubar model={items} start={start} end={end} className="custom-menubar mb-4" />;
 };

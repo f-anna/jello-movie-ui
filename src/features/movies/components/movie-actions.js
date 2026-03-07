@@ -9,7 +9,7 @@ import { Toast } from 'primereact/toast';
 import { listService } from '../api/list-api';
 import { LIST_TYPES } from '../../../constants/listTypes';
 
-export const MovieActions = ({ movieId, movieTitle }) => {
+export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickActions = false, hideButtons = false }, ref) => {
   const [addToListVisible, setAddToListVisible] = useState(false);
   const [editStatusVisible, setEditStatusVisible] = useState(false);
   const [selectedList, setSelectedList] = useState(null);
@@ -20,6 +20,11 @@ export const MovieActions = ({ movieId, movieTitle }) => {
   const [userLists, setUserLists] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
+
+  React.useImperativeHandle(ref, () => ({
+    openAddToListDialog: () => setAddToListVisible(true),
+    openEditStatusDialog: () => setEditStatusVisible(true)
+  }));
 
   const checkInitialStatus = useCallback(async () => {
     try {
@@ -280,47 +285,51 @@ export const MovieActions = ({ movieId, movieTitle }) => {
   return (
     <>
       <Toast ref={toast} />
-      <Card className="movie-actions">
-        <div className="flex flex-column gap-2">
-          <Button 
-            label="Add to list" 
-            icon="pi pi-plus" 
-            className="w-full" 
-            onClick={() => setAddToListVisible(true)}
-            outlined
-          />
-          <Button 
-            label="Edit status" 
-            icon="pi pi-pencil" 
-            className="w-full" 
-            onClick={() => setEditStatusVisible(true)}
-            outlined
-          />
-          <div className="flex align-items-center gap-2 mt-2">
-            <span className="text-sm">Quick Actions:</span>
+      {!hideButtons && (
+        <Card className="movie-actions">
+          <div className="flex flex-column gap-2">
             <Button 
-              icon={isFavorite ? "pi pi-heart-fill" : "pi pi-heart"} 
-              rounded 
-              text 
-              onClick={handleToggleFavorite}
-              className="p-button-sm"
-              severity={isFavorite ? "danger" : "secondary"}
-              tooltip="Favorite"
-              tooltipOptions={{ position: 'top' }}
+              label="Add to list" 
+              icon="pi pi-plus" 
+              className="w-full" 
+              onClick={() => setAddToListVisible(true)}
+              outlined
             />
             <Button 
-              icon={isBookmarked ? "pi pi-bookmark-fill" : "pi pi-bookmark"} 
-              rounded 
-              text 
-              onClick={handleToggleBookmark}
-              className="p-button-sm"
-              severity={isBookmarked ? "info" : "secondary"}
-              tooltip="Bookmark"
-              tooltipOptions={{ position: 'top' }}
+              label="Edit status" 
+              icon="pi pi-pencil" 
+              className="w-full" 
+              onClick={() => setEditStatusVisible(true)}
+              outlined
             />
+            {!hideQuickActions && (
+              <div className="flex align-items-center gap-2 mt-2">
+                <span className="text-sm">Quick Actions:</span>
+                <Button 
+                  icon={isFavorite ? "pi pi-heart-fill" : "pi pi-heart"} 
+                  rounded 
+                  text 
+                  onClick={handleToggleFavorite}
+                  className="p-button-sm"
+                  severity={isFavorite ? "danger" : "secondary"}
+                  tooltip="Favorite"
+                  tooltipOptions={{ position: 'top' }}
+                />
+                <Button 
+                  icon={isBookmarked ? "pi pi-bookmark-fill" : "pi pi-bookmark"} 
+                  rounded 
+                  text 
+                  onClick={handleToggleBookmark}
+                  className="p-button-sm"
+                  severity={isBookmarked ? "info" : "secondary"}
+                  tooltip="Bookmark"
+                  tooltipOptions={{ position: 'top' }}
+                />
+              </div>
+            )}
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
       {/* TODO: move this to different component */}
       <Dialog
@@ -415,4 +424,4 @@ export const MovieActions = ({ movieId, movieTitle }) => {
       </Dialog>
     </>
   );
-};
+});

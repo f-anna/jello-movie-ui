@@ -3,12 +3,14 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { InputSwitch } from 'primereact/inputswitch';
 import { Message } from 'primereact/message';
 import { listService } from '../api/list-api';
 
 export const CreateCustomListForm = ({ visible, onHide, onSuccess }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -26,12 +28,14 @@ export const CreateCustomListForm = ({ visible, onHide, onSuccess }) => {
     try {
       const newList = await listService.createCustomList(
         name.trim(),
-        description.trim() || null
+        description.trim() || null,
+        isPublic
       );
       
       // Reset form
       setName('');
       setDescription('');
+      setIsPublic(false);
       
       // Success callback
       onSuccess?.(newList);
@@ -46,6 +50,7 @@ export const CreateCustomListForm = ({ visible, onHide, onSuccess }) => {
   const handleCancel = () => {
     setName('');
     setDescription('');
+    setIsPublic(false);
     setError(null);
     onHide?.();
   };
@@ -111,6 +116,18 @@ export const CreateCustomListForm = ({ visible, onHide, onSuccess }) => {
             className="w-full"
             disabled={loading}
           />
+        </div>
+
+        <div className="field flex align-items-center gap-2 mt-3">
+          <InputSwitch
+            inputId="list-visibility"
+            checked={isPublic}
+            onChange={(e) => setIsPublic(e.value)}
+            disabled={loading}
+          />
+          <label htmlFor="list-visibility" className="mb-0">
+            {isPublic ? 'Public' : 'Private'} list
+          </label>
         </div>
       </form>
     </Dialog>

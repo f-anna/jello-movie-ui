@@ -64,7 +64,7 @@ export const listService = {
   },
 
   // Create a new CUSTOM list
-  async createCustomList(name, description = null) {
+  async createCustomList(name, description = null, isPublic = false) {
     const response = await fetch(`${API_BASE_URL}/api/list`, {
       method: 'POST',
       credentials: 'include',
@@ -75,6 +75,7 @@ export const listService = {
         name: name,
         description: description,
         listTypeId: 1, // Custom = 1 (from ListTypeEnum)
+        isPublic: isPublic,
       }),
     });
     
@@ -179,7 +180,7 @@ export const listService = {
 
   // Delete a list
   async deleteList(listId) {
-    const response = await fetch(`${API_BASE_URL}/api/list/${listId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/List/${listId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -198,5 +199,122 @@ export const listService = {
     }
     
     return true;
+  },
+
+  // Update/add a comment to a list item
+  async updateComment(listId, movieId, comment) {
+    const response = await fetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ comment }),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in.');
+      }
+      if (response.status === 404) {
+        throw new Error('List or movie not found');
+      }
+      throw new Error('Failed to update comment');
+    }
+    
+    return response.json();
+  },
+
+  // Get a comment for a list item
+  async getComment(listId, movieId) {
+    const response = await fetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in.');
+      }
+      if (response.status === 404) {
+        throw new Error('Comment not found');
+      }
+      throw new Error('Failed to fetch comment');
+    }
+    
+    return response.json();
+  },
+
+  // Delete/clear a comment from a list item
+  async deleteComment(listId, movieId) {
+    const response = await fetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in.');
+      }
+      if (response.status === 404) {
+        throw new Error('Comment not found');
+      }
+      throw new Error('Failed to delete comment');
+    }
+    
+    return true;
+  },
+
+  // Update list visibility (public/private)
+  async updateVisibility(listId, isPublic) {
+    const response = await fetch(`${API_BASE_URL}/api/list/${listId}/visibility`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ isPublic }),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in.');
+      }
+      if (response.status === 404) {
+        throw new Error('List not found');
+      }
+      throw new Error('Failed to update visibility');
+    }
+    
+    return response.json();
+  },
+
+  // Get public lists containing a specific movie
+  async getPublicListsContainingMovie(movieId) {
+    const response = await fetch(`${API_BASE_URL}/api/list/public/movie/${movieId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in.');
+      }
+      if (response.status === 404) {
+        throw new Error('Movie not found');
+      }
+      throw new Error('Failed to fetch public lists');
+    }
+    
+    return response.json();
   },
 };

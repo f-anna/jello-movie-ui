@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Message } from 'primereact/message';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -108,11 +109,20 @@ const ListsPage = () => {
             <div key={list.id} className="list-section">
               <div className="list-section-header">
                 <div className="list-section-title">
-                  <h2>{list.name}</h2>
+                  <Link to={`/list/${list.id}`} className="list-title-link">
+                    <h2>{list.name}</h2>
+                  </Link>
                   <Badge 
                     value={LIST_TYPE_NAMES[list.listTypeId]} 
                     severity={getListBadgeSeverity(list.listTypeId)}
                   />
+                  <Link to={`/list/${list.id}`}>
+                    <Button
+                      icon="pi pi-arrow-right"
+                      className="p-button-text p-button-sm"
+                      tooltip="View full list"
+                    />
+                  </Link>
                 </div>
                 {list.description && (
                   <p className="list-section-description">{list.description}</p>

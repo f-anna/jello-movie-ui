@@ -1,0 +1,87 @@
+.users-list-container {
+  margin-bottom: 3rem;
+}
+
+.users-list-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.users-list-title .pi {
+  color: var(--primary-color);
+}
+
+.users-list-loading,
+.users-list-error,
+.users-list-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.users-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.user-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.user-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-color);
+}
+
+.user-card-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.user-avatar {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600) 100%);
+  color: white;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-email {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-id {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.user-card-content > .pi-chevron-right {
+  color: #6c757d;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .users-list-grid {
+    grid-template-columns: 1fr;
+  }
+}

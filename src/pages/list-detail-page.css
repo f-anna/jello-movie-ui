@@ -1,0 +1,161 @@
+.list-detail-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.list-detail-page-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+.list-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid var(--surface-border);
+}
+
+.list-detail-header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1;
+}
+
+.list-detail-title-section {
+  flex: 1;
+}
+
+.list-detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.list-detail-page h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.list-detail-description {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: var(--text-color-secondary);
+  line-height: 1.6;
+}
+
+.list-detail-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 0.5rem;
+}
+
+.list-detail-count {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-color-secondary);
+}
+
+.list-detail-count i {
+  color: var(--primary-color);
+}
+
+.list-detail-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.list-detail-content {
+  margin-top: 2rem;
+}
+
+.list-detail-movies {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.list-detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--surface-ground);
+  border-radius: 12px;
+  gap: 1rem;
+  text-align: center;
+}
+
+.list-detail-empty h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.list-detail-empty p {
+  margin: 0;
+  color: var(--text-color-secondary);
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .list-detail-page {
+    padding: 1rem;
+  }
+
+  .list-detail-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .list-detail-header-content {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .list-detail-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .list-detail-page h1 {
+    font-size: 1.5rem;
+  }
+
+  .list-detail-actions {
+    width: 100%;
+  }
+
+  .list-detail-actions button {
+    flex: 1;
+  }
+
+  .list-detail-empty {
+    padding: 3rem 1.5rem;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .list-detail-page {
+    padding: 1.5rem;
+  }
+
+  .list-detail-page h1 {
+    font-size: 1.75rem;
+  }
+}

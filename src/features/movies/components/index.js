@@ -10,3 +10,7 @@ export { MovieImportForm } from './movie-import-form';
 export { MovieList } from './movie-list';
 export { MovieCarousel } from './movie-carousel';
 export { MovieCard } from './movie-card';
+export { CreateCustomListForm } from './create-custom-list-form';
+export { UserLists } from './user-lists';
+export { AddToListDialog } from './add-to-list-dialog';
+export { MovieListActions } from './movie-list-actions-menu';

@@ -7,17 +7,17 @@ const authClient = axios.create({
 
 export const authApi = {
   login: async (credentials) => {
-    await authClient.post('/login', credentials);
+    await authClient.post('/auth/login', credentials);
     // email frmom credentials
     return { email: credentials.email };
   },
 
   register: async (userData) => {
-    await authClient.post('/register', userData);
+    await authClient.post('/auth/register', userData);
     return { email: userData.email };
   },
 
   logout: async () => {
-    await authClient.post('/logout', {});
+    await authClient.post('/auth/logout', {});
   },
 };

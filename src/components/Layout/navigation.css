@@ -1,0 +1,28 @@
+.custom-menubar .p-menubar-end {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-bar-wrapper {
+  width: 350px;
+  max-width: 350px;
+}
+
+@media (max-width: 960px) {
+  .search-bar-wrapper {
+    width: 250px;
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 576px) {
+  .search-bar-wrapper {
+    width: 180px;
+    max-width: 180px;
+  }
+  
+  .search-bar-wrapper .p-inputtext {
+    font-size: 0.875rem;
+  }
+}

@@ -7,6 +7,7 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
 import { listService } from '../api/list-api';
 import { getListTypeName, LIST_TYPES } from '../../../constants/listTypes';
+import { useAuth } from '../../users/context/auth-context';
 import './movie-public-lists.css';
 
 export const MoviePublicLists = ({ movieId }) => {
@@ -14,6 +15,7 @@ export const MoviePublicLists = ({ movieId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchPublicLists = async () => {
@@ -30,10 +32,12 @@ export const MoviePublicLists = ({ movieId }) => {
       }
     };
 
-    if (movieId) {
+    if (movieId && isAuthenticated) {
       fetchPublicLists();
+    } else {
+      setLoading(false);
     }
-  }, [movieId]);
+  }, [movieId, isAuthenticated]);
 
   const handleListClick = (listId) => {
     navigate(`/list/${listId}`);

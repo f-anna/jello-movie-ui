@@ -14,10 +14,18 @@ export const authApi = {
 
   register: async (userData) => {
     await authClient.post('/auth/register', userData);
-    return { email: userData.email };
+    return { email: userData.email, username: userData.username };
   },
 
   logout: async () => {
     await authClient.post('/auth/logout', {});
+  },
+
+  updateUsername: async (newUsername) => {
+    await authClient.patch('/auth/username', { newUsername });
+  },
+
+  updatePassword: async (currentPassword, newPassword) => {
+    await authClient.patch('/auth/password', { currentPassword, newPassword });
   },
 };

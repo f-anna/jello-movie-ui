@@ -5,6 +5,7 @@ import { Avatar } from 'primereact/avatar';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
 import { userService } from '../../users/api/user-api';
+import { useAuth } from '../context/auth-context';
 import './users-list.css';
 
 export const UsersList = () => {
@@ -12,6 +13,7 @@ export const UsersList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -28,8 +30,12 @@ export const UsersList = () => {
       }
     };
 
-    fetchUsers();
-  }, []);
+    if (isAuthenticated) {
+      fetchUsers();
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   const handleUserClick = (userId) => {
     navigate(`/user/${userId}`);
@@ -39,6 +45,8 @@ export const UsersList = () => {
     if (!email) return '?';
     return email.substring(0, 2).toUpperCase();
   };
+
+  if (!isAuthenticated) return null;
 
   if (loading) {
     return (

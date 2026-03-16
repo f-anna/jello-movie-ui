@@ -1,0 +1,77 @@
+.profile-page {
+  padding: 2rem 1rem;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-avatar i {
+  font-size: 2rem;
+  color: #fff;
+}
+
+.profile-info h2 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+
+.profile-info p {
+  margin: 0;
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+
+.profile-section {
+  margin-bottom: 1.5rem;
+}
+
+.profile-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 1.25rem 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.profile-section-title i {
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.profile-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.profile-form .field label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-color);
+}

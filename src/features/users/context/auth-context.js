@@ -40,6 +40,13 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const updateUsername = async (newUsername) => {
+    await authApi.updateUsername(newUsername);
+    const updated = { ...user, username: newUsername };
+    setUser(updated);
+    localStorage.setItem('user', JSON.stringify(updated));
+  };
+
   const register = async (userData) => {
     const newUser = await authApi.register(userData);
     setUser(newUser);
@@ -64,6 +71,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateUsername,
     isAuthenticated: !!user,
   };
 

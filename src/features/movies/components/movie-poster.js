@@ -3,11 +3,13 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { listService } from '../api/list-api';
 import { LIST_TYPES } from '../../../constants/listTypes';
+import { useAuth } from '../../users/context/auth-context';
 
 export const MoviePoster = ({ movie }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const toast = useRef(null);
+  const { isAuthenticated } = useAuth();
 
   const checkInitialStatus = useCallback(async () => {
     try {
@@ -30,8 +32,10 @@ export const MoviePoster = ({ movie }) => {
   }, [movie.id]);
 
   useEffect(() => {
-    checkInitialStatus();
-  }, [checkInitialStatus]);
+    if (isAuthenticated) {
+      checkInitialStatus();
+    }
+  }, [checkInitialStatus, isAuthenticated]);
 
   const handleToggleFavorite = async (e) => {
     e.stopPropagation();
@@ -125,22 +129,24 @@ export const MoviePoster = ({ movie }) => {
           <i className="pi pi-image" style={{ fontSize: '4rem' }}></i>
         </div>
       )}
-      <div className="poster-quick-actions">
-        <Button
-          icon={isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'}
-          rounded
-          text
-          severity={isFavorite ? 'danger' : 'secondary'}
-          onClick={handleToggleFavorite}
-        />
-        <Button
-          icon={isBookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'}
-          rounded
-          text
-          severity={isBookmarked ? 'info' : 'secondary'}
-          onClick={handleToggleBookmark}
-        />
-      </div>
+      {isAuthenticated && (
+        <div className="poster-quick-actions">
+          <Button
+            icon={isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'}
+            rounded
+            text
+            severity={isFavorite ? 'danger' : 'secondary'}
+            onClick={handleToggleFavorite}
+          />
+          <Button
+            icon={isBookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'}
+            rounded
+            text
+            severity={isBookmarked ? 'info' : 'secondary'}
+            onClick={handleToggleBookmark}
+          />
+        </div>
+      )}
     </div>
   );
 };

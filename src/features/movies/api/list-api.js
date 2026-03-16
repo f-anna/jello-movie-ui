@@ -1,5 +1,13 @@
 const API_BASE_URL = 'https://localhost:7151';
 
+const parseErrorJson = async (response) => {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+};
+
 export const listService = {
   // Get all lists for current user
   async getAllLists() {
@@ -15,7 +23,7 @@ export const listService = {
       if (response.status === 401) {
         throw new Error('Unauthorized. Please log in.');
       }
-      const error = await response.json();
+      const error = await parseErrorJson(response);
       throw new Error(error.message || 'Failed to fetch lists');
     }
     
@@ -39,7 +47,7 @@ export const listService = {
       if (response.status === 404) {
         throw new Error('List not found');
       }
-      const error = await response.json();
+      const error = await parseErrorJson(response);
       throw new Error(error.message || 'Failed to fetch list');
     }
     
@@ -84,11 +92,11 @@ export const listService = {
         throw new Error('Unauthorized. Please log in.');
       }
       if (response.status === 400) {
-        const error = await response.json();
+        const error = await parseErrorJson(response);
         throw new Error(error.message || 'Invalid list data');
       }
       if (response.status === 409) {
-        const error = await response.json();
+        const error = await parseErrorJson(response);
         throw new Error(error.message || 'List already exists');
       }
       throw new Error('Failed to create list');
@@ -118,7 +126,7 @@ export const listService = {
         throw new Error('Unauthorized. Please log in.');
       }
       if (response.status === 409) {
-        const error = await response.json();
+        const error = await parseErrorJson(response);
         throw new Error(error.message || 'You already have this list type');
       }
       throw new Error('Failed to create list');
@@ -146,7 +154,7 @@ export const listService = {
         throw new Error('List or movie not found');
       }
       if (response.status === 409) {
-        const error = await response.json();
+        const error = await parseErrorJson(response);
         throw new Error(error.message || 'Movie already in list');
       }
       throw new Error('Failed to add movie to list');

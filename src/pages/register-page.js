@@ -12,6 +12,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [formData, setFormData] = useState({
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -40,6 +41,7 @@ const RegisterPage = () => {
 
     try {
       await register({
+        username: formData.username,
         email: formData.email,
         password: formData.password,
       });
@@ -64,6 +66,19 @@ const RegisterPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="auth-form">
+          <div className="field">
+            <label htmlFor="username">Username</label>
+            <InputText
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              className="w-full"
+              placeholder="Choose a username"
+            />
+          </div>
+
           <div className="field">
             <label htmlFor="email">Email</label>
             <InputText

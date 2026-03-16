@@ -70,8 +70,15 @@ export const Navigation = () => {
       {isAuthenticated ? (
         <>
           <span className="text-sm text-color-secondary hidden md:inline">
-            {user?.email}
+            {user?.username || user?.email}
           </span>
+          <Button
+            label="My Profile"
+            icon="pi pi-user"
+            onClick={() => navigate('/my-profile')}
+            severity="secondary"
+            text
+          />
           <Button
             label="Logout"
             icon="pi pi-sign-out"

@@ -5,21 +5,25 @@ import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { ListBox } from 'primereact/listbox';
 import { InputText } from 'primereact/inputtext';
+import { InputSwitch } from 'primereact/inputswitch';
 import { Toast } from 'primereact/toast';
 import { listService } from '../api/list-api';
 import { LIST_TYPES } from '../../../constants/listTypes';
+import { useAuth } from '../../users/context/auth-context';
 
 export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickActions = false, hideButtons = false }, ref) => {
   const [addToListVisible, setAddToListVisible] = useState(false);
   const [editStatusVisible, setEditStatusVisible] = useState(false);
   const [selectedList, setSelectedList] = useState(null);
   const [newListName, setNewListName] = useState('');
+  const [newListIsPublic, setNewListIsPublic] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [userLists, setUserLists] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
+  const { isAuthenticated } = useAuth();
 
   React.useImperativeHandle(ref, () => ({
     openAddToListDialog: () => setAddToListVisible(true),
@@ -50,9 +54,10 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
   }, [movieId]);
 
   useEffect(() => {
-    // Check initial favorite and bookmark status
-    checkInitialStatus();
-  }, [checkInitialStatus]);
+    if (isAuthenticated) {
+      checkInitialStatus();
+    }
+  }, [checkInitialStatus, isAuthenticated]);
 
   useEffect(() => {
     if (addToListVisible) {
@@ -99,7 +104,7 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
       
       if (newListName) {
         // Create new custom list
-        const newList = await listService.createCustomList(newListName.trim());
+        const newList = await listService.createCustomList(newListName.trim(), null, newListIsPublic);
         listId = newList.id;
       } else {
         // Use selected list - selectedList is the full object with { label, value, listData }
@@ -119,6 +124,7 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
       setAddToListVisible(false);
       setSelectedList(null);
       setNewListName('');
+      setNewListIsPublic(false);
     } catch (err) {
       toast.current?.show({
         severity: 'error',
@@ -282,6 +288,8 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
     );
   };
 
+  if (!isAuthenticated) return null;
+
   return (
     <>
       <Toast ref={toast} />
@@ -388,6 +396,18 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
               placeholder="Enter new list name"
               className="w-full"
             />
+            {newListName && (
+              <div className="flex align-items-center gap-2 mt-2">
+                <InputSwitch
+                  inputId="new-list-visibility"
+                  checked={newListIsPublic}
+                  onChange={(e) => setNewListIsPublic(e.value)}
+                />
+                <label htmlFor="new-list-visibility" className="mb-0">
+                  {newListIsPublic ? 'Public' : 'Private'} list
+                </label>
+              </div>
+            )}
           </div>
         </div>
       </Dialog>

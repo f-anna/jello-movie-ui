@@ -1,0 +1,234 @@
+================================================================================
+  FOLLOW FEATURE - FRONTEND INTEGRATION GUIDE
+================================================================================
+
+All endpoints require the user to be authenticated (cookie-based session).
+Base URL: https://localhost:<port>/api/follow
+
+Authentication is handled via the existing cookie. If the user is not logged in,
+all endpoints return 401 Unauthorized.
+
+
+================================================================================
+  USER FOLLOWS
+================================================================================
+
+--- Follow a user ---
+POST /api/follow/users/{userId}
+
+No request body needed.
+
+Success (200):
+  { "message": "User followed successfully" }
+
+Errors:
+  400 - { "message": "You cannot follow yourself" }
+  400 - { "message": "User does not exist" }
+  409 - { "message": "You are already following this user" }
+  401 - not logged in
+
+
+--- Unfollow a user ---
+DELETE /api/follow/users/{userId}
+
+No request body needed.
+
+Success (200):
+  { "message": "User unfollowed successfully" }
+
+Errors:
+  404 - { "message": "You are not following this user" }
+  401 - not logged in
+
+
+--- Get users I am following ---
+GET /api/follow/users/following
+
+Success (200):
+  [
+    {
+      "id": "3",
+      "userName": "anna",
+      "email": "anna@example.com",
+      "profilePictureUrl": null,
+      "dateOfBirth": null
+    },
+    ...
+  ]
+
+Note: returns an empty array [] if not following anyone.
+
+
+--- Get my followers ---
+GET /api/follow/users/followers
+
+Success (200): same shape as above — array of ApplicationUserModel.
+
+
+--- Check if I am following a specific user ---
+GET /api/follow/users/{userId}/status
+
+Success (200):
+  { "isFollowing": true }
+  or
+  { "isFollowing": false }
+
+Use this to drive Follow / Unfollow button state on profile pages.
+
+
+================================================================================
+  LIST FOLLOWS
+================================================================================
+
+--- Follow a public list ---
+POST /api/follow/lists/{listId}
+
+No request body needed.
+The list must be public (IsPublic = true) and must not belong to the current user.
+
+Success (200):
+  { "message": "List followed successfully" }
+
+Errors:
+  400 - { "message": "List does not exist" }
+  400 - { "message": "You cannot follow your own list" }
+  409 - { "message": "You can only follow public lists" }
+  409 - { "message": "You are already following this list" }
+  401 - not logged in
+
+
+--- Unfollow a list ---
+DELETE /api/follow/lists/{listId}
+
+No request body needed.
+
+Success (200):
+  { "message": "List unfollowed successfully" }
+
+Errors:
+  404 - { "message": "You are not following this list" }
+  401 - not logged in
+
+
+--- Get all lists I am following ---
+GET /api/follow/lists
+
+Success (200):
+  [
+    {
+      "id": 12,
+      "listTypeId": 1,
+      "userId": 3,
+      "name": "My Sci-Fi Picks",
+      "description": "Great sci-fi films",
+      "isPublic": true,
+      "createdAt": "2026-01-10T14:00:00Z",
+      "listType": { "id": 1, "typeName": "Custom" },
+      "user": { "id": "3", "userName": "anna", ... },
+      "listItems": [
+        {
+          "id": 5,
+          "movieId": 101,
+          "listId": 12,
+          "comment": null,
+          "addedAt": "2026-01-11T10:00:00Z",
+          "movie": { "id": 101, "title": "Dune", ... }
+        }
+      ]
+    },
+    ...
+  ]
+
+Note: returns an empty array [] if not following any lists.
+
+
+--- Check if I am following a specific list ---
+GET /api/follow/lists/{listId}/status
+
+Success (200):
+  { "isFollowing": true }
+  or
+  { "isFollowing": false }
+
+Use this to drive Follow / Unfollow button state on list detail pages.
+
+
+================================================================================
+  SUGGESTED USAGE PATTERNS
+================================================================================
+
+--- Profile page ---
+1. Load the viewed user's profile data from GET /api/user
+2. Check follow status: GET /api/follow/users/{userId}/status
+3. Render Follow or Unfollow button based on { isFollowing }
+4. On Follow click: POST /api/follow/users/{userId}
+5. On Unfollow click: DELETE /api/follow/users/{userId}
+6. Show follower/following counts by loading:
+   GET /api/follow/users/followers   (for the viewed user — see note below)
+   GET /api/follow/users/following
+
+Note: the current endpoints return followers/following for the logged-in user only.
+To show counts for another user's profile, that would need a separate endpoint.
+
+
+--- List detail page (public list belonging to another user) ---
+1. Check: GET /api/follow/lists/{listId}/status
+2. Render Follow / Unfollow button
+3. On Follow click: POST /api/follow/lists/{listId}
+4. On Unfollow click: DELETE /api/follow/lists/{listId}
+
+
+--- "Following" feed / dashboard ---
+1. GET /api/follow/lists     → show all lists the user is tracking
+2. GET /api/follow/users/following  → show followed users with links to their profiles
+
+
+--- Handling errors on the frontend ---
+200 → success, update UI state
+400 → show the message field as a user-facing error toast
+401 → redirect to login
+404 → show "not found" or silently refresh state
+409 → show the message field (e.g. "Already following")
+
+
+================================================================================
+  FETCH EXAMPLES (JavaScript)
+================================================================================
+
+const BASE = "https://localhost:7000/api/follow";
+
+// Follow a user
+await fetch(`${BASE}/users/${userId}`, {
+  method: "POST",
+  credentials: "include",   // required for cookie auth
+});
+
+// Unfollow a user
+await fetch(`${BASE}/users/${userId}`, {
+  method: "DELETE",
+  credentials: "include",
+});
+
+// Check follow status
+const res = await fetch(`${BASE}/users/${userId}/status`, {
+  credentials: "include",
+});
+const { isFollowing } = await res.json();
+
+// Get following list
+const res = await fetch(`${BASE}/users/following`, {
+  credentials: "include",
+});
+const users = await res.json();
+
+// Follow a list
+await fetch(`${BASE}/lists/${listId}`, {
+  method: "POST",
+  credentials: "include",
+});
+
+// Get followed lists
+const res = await fetch(`${BASE}/lists`, {
+  credentials: "include",
+});
+const lists = await res.json();

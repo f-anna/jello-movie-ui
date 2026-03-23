@@ -26,62 +26,82 @@
 
 .users-list-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
 }
 
+/* Card base */
 .user-card {
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid #e0e0e0;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  border: 1px solid var(--surface-border);
+  overflow: hidden;
 }
 
 .user-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.13);
   border-color: var(--primary-color);
 }
 
-.user-card-content {
+.user-card .p-card-body,
+.user-card .p-card-content {
+  padding: 0;
+}
+
+/* Gradient banner at top */
+.user-card-header {
+  height: 64px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600, #1565c0) 100%);
+}
+
+/* Body: avatar overlaps the banner */
+.user-card-body {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 0.5rem;
+  padding: 0 1rem 1.25rem;
+  margin-top: -32px;
+  text-align: center;
+  gap: 0.6rem;
 }
 
+/* Avatar with white border to "pop" off the banner */
 .user-avatar {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600) 100%);
-  color: white;
-  font-weight: 600;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600, #1565c0) 100%);
+  color: #fff;
+  font-weight: 700;
+  border: 3px solid var(--surface-0);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
   flex-shrink: 0;
-}
-
-.user-info {
-  flex: 1;
-  min-width: 0;
 }
 
 .user-email {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  margin: 0 0 0.25rem 0;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 100%;
+  color: var(--text-color);
 }
 
-.user-id {
-  font-size: 0.875rem;
-  color: #6c757d;
+/* Chip acts as a subtle CTA */
+.user-card-chip {
+  font-size: 0.78rem;
+  background: var(--primary-50, #e8f4fd);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-200, #90caf9);
+  padding: 0.2rem 0.6rem;
 }
 
-.user-card-content > .pi-chevron-right {
-  color: #6c757d;
-  flex-shrink: 0;
+.user-card-chip .p-chip-icon {
+  font-size: 0.75rem;
 }
 
 @media (max-width: 768px) {
   .users-list-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 }

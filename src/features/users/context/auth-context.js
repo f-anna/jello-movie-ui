@@ -1,7 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from '../api/auth-api';
+import { userService } from '../api/user-api';
 
 const AuthContext = createContext(null);
+
+const enrichWithProfile = async (base) => {
+  try {
+    const me = await userService.getMe();
+    return { ...base, id: me.id, username: me.userName || base.username };
+  } catch {
+    return base;
+  }
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -35,9 +45,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const userData = await authApi.login(credentials);
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    return userData;
+    const enriched = await enrichWithProfile(userData);
+    setUser(enriched);
+    localStorage.setItem('user', JSON.stringify(enriched));
+    return enriched;
   };
 
   const updateUsername = async (newUsername) => {
@@ -49,9 +60,10 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const newUser = await authApi.register(userData);
-    setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
-    return newUser;
+    const enriched = await enrichWithProfile(newUser);
+    setUser(enriched);
+    localStorage.setItem('user', JSON.stringify(enriched));
+    return enriched;
   };
 
   const logout = async () => {

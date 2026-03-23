@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { Avatar } from 'primereact/avatar';
+import { Chip } from 'primereact/chip';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
 import { userService } from '../../users/api/user-api';
@@ -84,18 +85,20 @@ export const UsersList = () => {
             className="user-card"
             onClick={() => handleUserClick(user.id)}
           >
-            <div className="user-card-content">
+            <div className="user-card-header" />
+            <div className="user-card-body">
               <Avatar
                 label={getInitials(user.email)}
-                size="large"
+                size="xlarge"
                 shape="circle"
                 className="user-avatar"
               />
-              <div className="user-info">
-                <h3 className="user-email">{user.email}</h3>
-                <span className="user-id">ID: {user.id}</span>
-              </div>
-              <i className="pi pi-chevron-right" />
+              <h3 className="user-email">{user.email}</h3>
+              <Chip
+                label="View Profile"
+                icon="pi pi-arrow-right"
+                className="user-card-chip"
+              />
             </div>
           </Card>
         ))}

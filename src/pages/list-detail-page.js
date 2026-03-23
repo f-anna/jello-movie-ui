@@ -8,6 +8,8 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { InputSwitch } from 'primereact/inputswitch';
 import { listService } from '../features/movies/api/list-api';
+import { followService } from '../features/users/api/follow-api';
+import { useAuth } from '../features/users/context/auth-context';
 import { ListItemCard } from '../features/movies/components/list-item-card';
 import { getListTypeName, LIST_TYPES } from '../constants/listTypes';
 import './list-detail-page.css';
@@ -15,16 +17,20 @@ import './list-detail-page.css';
 const ListDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user: currentUser, isAuthenticated } = useAuth();
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
   const toast = React.useRef(null);
+
+  const isOwnList = list && currentUser && String(list.userId) === String(currentUser.id);
 
   const loadList = async () => {
     setLoading(true);
     setError(null);
-    
     try {
       const listData = await listService.getListById(id);
       setList(listData);
@@ -39,6 +45,13 @@ const ListDetailPage = () => {
     loadList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    if (!list || !isAuthenticated || isOwnList) return;
+    followService.getListFollowStatus(id)
+      .then((status) => setIsFollowing(status?.isFollowing ?? false))
+      .catch(() => {});
+  }, [list, isAuthenticated, isOwnList, id]);
 
   const handleDeleteList = () => {
     confirmDialog({
@@ -55,16 +68,9 @@ const ListDetailPage = () => {
             detail: 'List deleted successfully',
             life: 3000,
           });
-          setTimeout(() => {
-            navigate('/lists');
-          }, 1000);
+          setTimeout(() => navigate('/lists'), 1000);
         } catch (err) {
-          toast.current?.show({
-            severity: 'error',
-            summary: 'Error',
-            detail: err.message,
-            life: 3000,
-          });
+          toast.current?.show({ severity: 'error', summary: 'Error', detail: err.message, life: 3000 });
         }
       },
     });
@@ -82,35 +88,41 @@ const ListDetailPage = () => {
         life: 3000,
       });
     } catch (err) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message,
-        life: 3000,
-      });
+      toast.current?.show({ severity: 'error', summary: 'Error', detail: err.message, life: 3000 });
     } finally {
       setUpdatingVisibility(false);
     }
   };
 
+  const handleFollowToggle = async () => {
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await followService.unfollowList(id);
+        setIsFollowing(false);
+        toast.current?.show({ severity: 'info', summary: 'Unfollowed', detail: 'Removed from followed lists', life: 3000 });
+      } else {
+        await followService.followList(id);
+        setIsFollowing(true);
+        toast.current?.show({ severity: 'success', summary: 'Following', detail: 'Added to followed lists', life: 3000 });
+      }
+    } catch (err) {
+      toast.current?.show({ severity: 'error', summary: 'Error', detail: err.message, life: 3000 });
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   const getListBadgeSeverity = (listTypeId) => {
     switch (listTypeId) {
-      case LIST_TYPES.COMPLETED:
-        return 'success';
-      case LIST_TYPES.WATCHING:
-        return 'info';
-      case LIST_TYPES.PLANNED:
-        return 'warning';
-      case LIST_TYPES.DROPPED:
-        return 'danger';
-      case LIST_TYPES.FAVORITE:
-        return 'danger';
-      case LIST_TYPES.BOOKMARKED:
-        return 'help';
-      case LIST_TYPES.CUSTOM:
-        return 'info';
-      default:
-        return 'info';
+      case LIST_TYPES.COMPLETED: return 'success';
+      case LIST_TYPES.WATCHING: return 'info';
+      case LIST_TYPES.PLANNED: return 'warning';
+      case LIST_TYPES.DROPPED: return 'danger';
+      case LIST_TYPES.FAVORITE: return 'danger';
+      case LIST_TYPES.BOOKMARKED: return 'help';
+      case LIST_TYPES.CUSTOM: return 'info';
+      default: return 'info';
     }
   };
 
@@ -127,11 +139,7 @@ const ListDetailPage = () => {
     return (
       <div className="list-detail-page">
         <Message severity="error" text={error} className="mb-3 w-full" />
-        <Button
-          label="Back to Lists"
-          icon="pi pi-arrow-left"
-          onClick={() => navigate('/lists')}
-        />
+        <Button label="Back to Lists" icon="pi pi-arrow-left" onClick={() => navigate('/lists')} />
       </div>
     );
   }
@@ -140,11 +148,7 @@ const ListDetailPage = () => {
     return (
       <div className="list-detail-page">
         <Message severity="warn" text="List not found" className="mb-3 w-full" />
-        <Button
-          label="Back to Lists"
-          icon="pi pi-arrow-left"
-          onClick={() => navigate('/lists')}
-        />
+        <Button label="Back to Lists" icon="pi pi-arrow-left" onClick={() => navigate('/lists')} />
       </div>
     );
   }
@@ -159,8 +163,8 @@ const ListDetailPage = () => {
             <Button
               icon="pi pi-arrow-left"
               className="p-button-text p-button-plain"
-              onClick={() => navigate('/lists')}
-              tooltip="Back to Lists"
+              onClick={() => isOwnList ? navigate('/lists') : navigate(-1)}
+              tooltip={isOwnList ? 'Back to Lists' : 'Go back'}
             />
             <div className="list-detail-title-section">
               <div className="list-detail-title-row">
@@ -182,7 +186,8 @@ const ListDetailPage = () => {
               </div>
             </div>
           </div>
-          {list.listTypeId === LIST_TYPES.CUSTOM && (
+
+          {isOwnList && list.listTypeId === LIST_TYPES.CUSTOM && (
             <div className="list-detail-actions">
               <div className="flex align-items-center gap-2 mr-3">
                 <InputSwitch
@@ -191,15 +196,26 @@ const ListDetailPage = () => {
                   disabled={updatingVisibility}
                   tooltip={list.isPublic ? 'Public list' : 'Private list'}
                 />
-                <span className="text-sm">
-                  {list.isPublic ? 'Public' : 'Private'}
-                </span>
+                <span className="text-sm">{list.isPublic ? 'Public' : 'Private'}</span>
               </div>
               <Button
                 label="Delete List"
                 icon="pi pi-trash"
                 className="p-button-danger p-button-outlined"
                 onClick={handleDeleteList}
+              />
+            </div>
+          )}
+
+          {!isOwnList && isAuthenticated && list.isPublic && (
+            <div className="list-detail-actions">
+              <Button
+                label={isFollowing ? 'Unfollow List' : 'Follow List'}
+                icon={isFollowing ? 'pi pi-bookmark' : 'pi pi-bookmark'}
+                severity={isFollowing ? 'secondary' : 'primary'}
+                outlined={isFollowing}
+                loading={followLoading}
+                onClick={handleFollowToggle}
               />
             </div>
           )}
@@ -215,6 +231,7 @@ const ListDetailPage = () => {
                   listId={list.id}
                   listItem={listItem}
                   onRemoved={loadList}
+                  readOnly={!isOwnList}
                 />
               ))}
             </div>
@@ -222,10 +239,12 @@ const ListDetailPage = () => {
             <div className="list-detail-empty">
               <i className="pi pi-inbox" style={{ fontSize: '3rem', color: '#ccc' }}></i>
               <h3>No movies in this list yet</h3>
-              <p>Start adding movies to build your collection!</p>
-              <Link to="/">
-                <Button label="Browse Movies" icon="pi pi-search" />
-              </Link>
+              {isOwnList && (
+                <>
+                  <p>Start adding movies to build your collection!</p>
+                  <Link to="/"><Button label="Browse Movies" icon="pi pi-search" /></Link>
+                </>
+              )}
             </div>
           )}
         </div>

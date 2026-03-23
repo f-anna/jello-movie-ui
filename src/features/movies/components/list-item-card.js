@@ -11,7 +11,7 @@ import { listService } from '../api/list-api';
 import { AddToListDialog } from './add-to-list-dialog';
 import './list-item-card.css';
 
-export const ListItemCard = ({ movie, listId, listItem, onRemoved }) => {
+export const ListItemCard = ({ movie, listId, listItem, onRemoved, readOnly = false }) => {
   const [showAddToListDialog, setShowAddToListDialog] = useState(false);
   const [showCommentDialog, setShowCommentDialog] = useState(false);
   const [comment, setComment] = useState(listItem?.comment || '');
@@ -196,48 +196,63 @@ export const ListItemCard = ({ movie, listId, listItem, onRemoved }) => {
                   <i className="pi pi-comment" />
                   <span>{listItem.comment}</span>
                 </div>
-                <div className="list-item-card-comment-actions">
-                  <Button
-                    icon="pi pi-pencil"
-                    className="p-button-text p-button-sm p-button-rounded"
-                    onClick={handleEditComment}
-                    tooltip="Edit comment"
-                    disabled={deletingComment}
-                  />
-                  <Button
-                    icon="pi pi-trash"
-                    className="p-button-text p-button-sm p-button-rounded p-button-danger"
-                    onClick={handleDeleteComment}
-                    loading={deletingComment}
-                    tooltip="Delete comment"
-                  />
-                </div>
+                {!readOnly && (
+                  <div className="list-item-card-comment-actions">
+                    <Button
+                      icon="pi pi-pencil"
+                      className="p-button-text p-button-sm p-button-rounded"
+                      onClick={handleEditComment}
+                      tooltip="Edit comment"
+                      disabled={deletingComment}
+                    />
+                    <Button
+                      icon="pi pi-trash"
+                      className="p-button-text p-button-sm p-button-rounded p-button-danger"
+                      onClick={handleDeleteComment}
+                      loading={deletingComment}
+                      tooltip="Delete comment"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           <div className="list-item-card-actions">
-            <Button
-              icon="pi pi-comment"
-              label={listItem?.comment ? "Edit Comment" : "Add Comment"}
-              className="p-button-text"
-              onClick={handleEditComment}
-              tooltip={listItem?.comment ? "Edit comment" : "Add comment"}
-            />
-            <Button
-              icon="pi pi-plus"
-              label="Add to List"
-              className="p-button-text"
-              onClick={() => setShowAddToListDialog(true)}
-              tooltip="Add to another list"
-            />
-            <Button
-              icon="pi pi-trash"
-              label="Remove"
-              className="p-button-text p-button-danger"
-              onClick={handleRemoveFromList}
-              tooltip="Remove from this list"
-            />
+            {!readOnly && (
+              <>
+                <Button
+                  icon="pi pi-comment"
+                  label={listItem?.comment ? "Edit Comment" : "Add Comment"}
+                  className="p-button-text"
+                  onClick={handleEditComment}
+                  tooltip={listItem?.comment ? "Edit comment" : "Add comment"}
+                />
+                <Button
+                  icon="pi pi-plus"
+                  label="Add to List"
+                  className="p-button-text"
+                  onClick={() => setShowAddToListDialog(true)}
+                  tooltip="Add to another list"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  label="Remove"
+                  className="p-button-text p-button-danger"
+                  onClick={handleRemoveFromList}
+                  tooltip="Remove from this list"
+                />
+              </>
+            )}
+            {readOnly && (
+              <Button
+                icon="pi pi-plus"
+                label="Add to List"
+                className="p-button-text"
+                onClick={() => setShowAddToListDialog(true)}
+                tooltip="Add to your list"
+              />
+            )}
           </div>
         </div>
       </Card>

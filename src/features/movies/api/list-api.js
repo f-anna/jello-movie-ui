@@ -8,10 +8,20 @@ const parseErrorJson = async (response) => {
   }
 };
 
+// Wraps fetch to prevent following auth challenge redirects (ASP.NET Core
+// redirects unauthenticated API requests to /auth/login which returns 405 on GET).
+const apiFetch = async (url, options = {}) => {
+  const response = await fetch(url, { ...options, redirect: 'manual' });
+  if (response.type === 'opaqueredirect') {
+    throw Object.assign(new Error('Unauthorized. Please log in.'), { status: 401 });
+  }
+  return response;
+};
+
 export const listService = {
   // Get all lists for current user
   async getAllLists() {
-    const response = await fetch(`${API_BASE_URL}/api/list`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -32,7 +42,7 @@ export const listService = {
 
   // Get specific list by ID
   async getListById(id) {
-    const response = await fetch(`${API_BASE_URL}/api/list/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list/${id}`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -56,7 +66,7 @@ export const listService = {
 
   // Get available list types
   async getListTypes() {
-    const response = await fetch(`${API_BASE_URL}/api/list/types`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list/types`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -73,7 +83,7 @@ export const listService = {
 
   // Create a new CUSTOM list
   async createCustomList(name, description = null, isPublic = false) {
-    const response = await fetch(`${API_BASE_URL}/api/list`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -108,7 +118,7 @@ export const listService = {
   // Create a predefined list (Completed, Planned, etc.)
   // Note: Each user can only have ONE of each predefined type
   async createPredefinedList(listTypeId) {
-    const response = await fetch(`${API_BASE_URL}/api/list`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -137,7 +147,7 @@ export const listService = {
 
   // Add movie to a list
   async addMovieToList(listId, movieId) {
-    const response = await fetch(`${API_BASE_URL}/api/list/${listId}/items`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list/${listId}/items`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -165,7 +175,7 @@ export const listService = {
 
   // Remove movie from a list
   async removeMovieFromList(listId, movieId) {
-    const response = await fetch(`${API_BASE_URL}/api/list/${listId}/items/${movieId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list/${listId}/items/${movieId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -188,7 +198,7 @@ export const listService = {
 
   // Delete a list
   async deleteList(listId) {
-    const response = await fetch(`${API_BASE_URL}/api/List/${listId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/List/${listId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -211,7 +221,7 @@ export const listService = {
 
   // Update/add a comment to a list item
   async updateComment(listId, movieId, comment) {
-    const response = await fetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
       method: 'PUT',
       credentials: 'include',
       headers: {
@@ -235,7 +245,7 @@ export const listService = {
 
   // Get a comment for a list item
   async getComment(listId, movieId) {
-    const response = await fetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -258,7 +268,7 @@ export const listService = {
 
   // Delete/clear a comment from a list item
   async deleteComment(listId, movieId) {
-    const response = await fetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/List/${listId}/items/${movieId}/comment`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -281,7 +291,7 @@ export const listService = {
 
   // Update list visibility (public/private)
   async updateVisibility(listId, isPublic) {
-    const response = await fetch(`${API_BASE_URL}/api/list/${listId}/visibility`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list/${listId}/visibility`, {
       method: 'PATCH',
       credentials: 'include',
       headers: {
@@ -305,7 +315,7 @@ export const listService = {
 
   // Get public lists containing a specific movie
   async getPublicListsContainingMovie(movieId) {
-    const response = await fetch(`${API_BASE_URL}/api/list/public/movie/${movieId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/list/public/movie/${movieId}`, {
       method: 'GET',
       credentials: 'include',
       headers: {

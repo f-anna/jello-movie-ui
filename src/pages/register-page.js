@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Message } from 'primereact/message';
+import { Divider } from 'primereact/divider';
+import { FloatLabel } from 'primereact/floatlabel';
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
 import { useAuth } from '../features/users/context/auth-context';
 import './auth-page.css';
 
@@ -21,10 +24,7 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
 
@@ -40,11 +40,7 @@ const RegisterPage = () => {
     }
 
     try {
-      await register({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-      });
+      await register({ username: formData.username, email: formData.email, password: formData.password });
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -54,94 +50,105 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="auth-page-container">
-      <Card className="auth-card">
-        <div className="auth-header">
-          <i className="pi pi-film" style={{ fontSize: '2.5rem' }}></i>
-          <h2>Register for JelloMovie</h2>
+    <div className="auth-layout">
+      {/* Left branding panel */}
+      <div className="auth-brand-panel">
+        <div className="auth-brand-content">
+          <i className="pi pi-film auth-brand-icon" />
+          <h1 className="auth-brand-title">JelloMovie</h1>
+          <p className="auth-brand-tagline">Track, discover, and share your movie journey.</p>
         </div>
+      </div>
 
-        {error && (
-          <Message severity="error" text={error} className="w-full mb-3" />
-        )}
-
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="field">
-            <label htmlFor="username">Username</label>
-            <InputText
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className="w-full"
-              placeholder="Choose a username"
-            />
+      {/* Right form panel */}
+      <div className="auth-form-panel">
+        <div className="auth-form-box">
+          <div className="auth-form-heading">
+            <h2>Create an account</h2>
+            <p>Join and start tracking your movies</p>
           </div>
 
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <InputText
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full"
-              placeholder="Enter your email"
+          {error && <Message severity="error" text={error} className="w-full mb-4" />}
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <FloatLabel>
+              <IconField>
+                <InputIcon className="pi pi-user" />
+                <InputText
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
+                  className="w-full"
+                />
+              </IconField>
+              <label htmlFor="username">Username</label>
+            </FloatLabel>
+
+            <FloatLabel>
+              <IconField>
+                <InputIcon className="pi pi-envelope" />
+                <InputText
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full"
+                />
+              </IconField>
+              <label htmlFor="email">Email address</label>
+            </FloatLabel>
+
+            <FloatLabel>
+              <Password
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className="w-full"
+                inputClassName="w-full"
+                toggleMask
+              />
+              <label htmlFor="password">Password</label>
+            </FloatLabel>
+
+            <FloatLabel>
+              <Password
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                className="w-full"
+                inputClassName="w-full"
+                feedback={false}
+                toggleMask
+              />
+              <label htmlFor="confirmPassword">Confirm password</label>
+            </FloatLabel>
+
+            <Button
+              type="submit"
+              label="Create account"
+              icon="pi pi-user-plus"
+              iconPos="right"
+              loading={loading}
+              className="w-full auth-submit-btn"
             />
-          </div>
+          </form>
 
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <Password
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full"
-              inputClassName="w-full"
-              placeholder="Enter your password"
-              toggleMask
-            />
-          </div>
+          <Divider />
 
-          <div className="field">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <Password
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              className="w-full"
-              inputClassName="w-full"
-              placeholder="Confirm your password"
-              feedback={false}
-              toggleMask
-            />
-          </div>
-
-          <Button
-            type="submit"
-            label="Register"
-            icon="pi pi-user-plus"
-            loading={loading}
-            className="w-full"
-          />
-        </form>
-
-        <div className="auth-footer">
-          <p>
+          <p className="auth-switch-text">
             Already have an account?{' '}
-            <Link to="/login" className="auth-link">
-              Login here
-            </Link>
+            <Link to="/login" className="auth-link">Sign in</Link>
           </p>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

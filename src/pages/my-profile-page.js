@@ -330,9 +330,10 @@ const MyProfilePage = () => {
                           {posters.map((path, i) => (
                             <img
                               key={i}
-                              src={`https://image.tmdb.org/t/p/w154${path}`}
+                              src={path}
                               alt=""
                               className="follow-list-poster"
+                              loading="lazy"
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           ))}

@@ -1,0 +1,130 @@
+FRONTEND IMAGE HANDLING GUIDE
+=============================
+
+All images in JelloMovieApp are external URLs — the backend stores and returns full URL strings.
+There is no file upload endpoint and no local image storage. The frontend never constructs
+image URLs itself; it only uses what the API returns.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. MOVIE IMAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source: TMDB image CDN (https://image.tmdb.org/t/p/)
+Stored as: Full URLs in the database, returned in every MovieModel response.
+
+Fields returned on any movie object:
+  posterPath    — w500 resolution  (e.g. https://image.tmdb.org/t/p/w500/abc.jpg)
+  backdropPath  — w780 resolution  (e.g. https://image.tmdb.org/t/p/w780/abc.jpg)
+
+Both fields are nullable. Always guard against null before rendering.
+
+USAGE:
+  <img src={movie.posterPath} alt={movie.title} />
+  <img src={movie.backdropPath} alt={movie.title} />
+
+  With null guard:
+  {movie.posterPath && <img src={movie.posterPath} alt={movie.title} />}
+
+RECOMMENDED SIZES:
+  posterPath   → movie cards, search results, list items (portrait aspect ratio ~2:3)
+  backdropPath → hero banners, detail page headers (landscape aspect ratio ~16:9)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. ALTERNATE / HIGH-RES MOVIE IMAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Endpoint: GET /api/tmdb/movie/{tmdbId}/images
+
+Use this when you need more image options than the default poster/backdrop, or need
+original-resolution images (e.g. a gallery, logo overlay, image picker).
+
+Response shape:
+  {
+    "tmdbId": 123,
+    "backdrops": [ { "imageUrl": "...", "width": 3840, "height": 2160, "aspectRatio": 1.778, "voteAverage": 5.4 }, ... ],
+    "posters":   [ { "imageUrl": "...", "width": 2000, "height": 3000, "aspectRatio": 0.667, "voteAverage": 5.7 }, ... ],
+    "logos":     [ { "imageUrl": "...", "width": 1000, "height": 400,  "aspectRatio": 2.5,   "voteAverage": 5.1 }, ... ]
+  }
+
+All imageUrl values are ready-to-use — use them directly as <img src>.
+
+Sorting tip: sort by voteAverage descending to show the best-rated image first.
+Filtering tip: filter by iso6391 === "en" (or null) to prefer English-language images.
+
+USAGE:
+  const res = await fetch(`/api/tmdb/movie/${tmdbId}/images`);
+  const data = await res.json();
+  const bestBackdrop = data.backdrops.sort((a, b) => b.voteAverage - a.voteAverage)[0];
+  <img src={bestBackdrop.imageUrl} />
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. TMDB SEARCH RESULT IMAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Endpoint: GET /api/tmdb/search?query=...
+
+Search results also include posterPath and backdropPath as full URLs — same as movie objects.
+Use posterPath for displaying results in a search dropdown or results grid.
+
+  {movie.posterPath && <img src={movie.posterPath} alt={movie.title} />}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. USER PROFILE PICTURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source: Any external URL supplied by the user at registration.
+Stored as: A URL string in the database.
+Returned as: profilePictureUrl on any ApplicationUserModel response.
+
+There is no image upload endpoint. The user provides a URL (e.g. from Gravatar, a CDN,
+or any public image host). The backend stores it as-is.
+
+SAVING (at registration):
+  POST /api/auth/register
+  Body: { username, email, password, profilePicture: "https://..." }
+
+  The field name in the request body is "profilePicture" (not "profilePictureUrl").
+  Pass a full, publicly accessible URL string. Pass null or omit if not set.
+
+LOADING:
+  profilePictureUrl is returned on user objects from the user API.
+  Always provide a fallback for null (e.g. a default avatar image or initials).
+
+  <img
+    src={user.profilePictureUrl ?? "/default-avatar.png"}
+    alt={user.username}
+  />
+
+NOTE: There is currently no endpoint to update the profile picture after registration.
+      Updating it would require a general profile update endpoint when one is added.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. GENERAL BEST PRACTICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Never construct TMDB image URLs on the frontend. The backend already builds them
+  at import time with the correct base URL and size. Use what the API returns.
+
+- All image fields are nullable. Always handle the null case with a fallback
+  placeholder image or conditional rendering.
+
+- For lazy loading (recommended for lists/grids):
+    <img src={movie.posterPath} loading="lazy" alt={movie.title} />
+
+- For broken image fallback:
+    <img
+      src={movie.posterPath}
+      alt={movie.title}
+      onError={(e) => { e.target.src = "/placeholder-poster.png"; }}
+    />
+
+- Aspect ratios to design for:
+    Posters    → 2:3  (portrait)
+    Backdrops  → 16:9 (landscape)
+    Logos      → variable, check width/height from the images endpoint
+    Avatars    → 1:1  (square/circle crop)

@@ -2,84 +2,77 @@ import React, { useState, useMemo } from 'react';
 import { Galleria } from 'primereact/galleria';
 import { Card } from 'primereact/card';
 
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
-
 export const MovieImages = ({ images }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  
-  // Transform TMDB images to Galleria format
+
   const displayImages = useMemo(() => {
     if (!images) return [];
-    
+
+    const topN = (arr, n) =>
+      [...(arr ?? [])].sort((a, b) => b.voteAverage - a.voteAverage).slice(0, n);
+
     const allImages = [];
-    
-    // Add backdrops
-    if (images.backdrops?.length > 0) {
-      images.backdrops.forEach((backdrop, index) => {
-        allImages.push({
-          itemImageSrc: `${TMDB_IMAGE_BASE_URL}/original${backdrop.filePath}`,
-          thumbnailImageSrc: `${TMDB_IMAGE_BASE_URL}/w185${backdrop.filePath}`,
-          alt: `Backdrop ${index + 1}`,
-          type: 'backdrop'
-        });
+
+    topN(images.backdrops, 6).forEach((backdrop, index) => {
+      allImages.push({
+        itemImageSrc: backdrop.imageUrl,
+        thumbnailImageSrc: backdrop.imageUrl,
+        alt: `Backdrop ${index + 1}`,
+        type: 'backdrop'
       });
-    }
-    
-    // Add posters
-    if (images.posters?.length > 0) {
-      images.posters.forEach((poster, index) => {
-        allImages.push({
-          itemImageSrc: `${TMDB_IMAGE_BASE_URL}/original${poster.filePath}`,
-          thumbnailImageSrc: `${TMDB_IMAGE_BASE_URL}/w185${poster.filePath}`,
-          alt: `Poster ${index + 1}`,
-          type: 'poster'
-        });
+    });
+
+    topN(images.posters, 4).forEach((poster, index) => {
+      allImages.push({
+        itemImageSrc: poster.imageUrl,
+        thumbnailImageSrc: poster.imageUrl,
+        alt: `Poster ${index + 1}`,
+        type: 'poster'
       });
-    }
-    
-    // Add logos
-    if (images.logos?.length > 0) {
-      images.logos.forEach((logo, index) => {
-        allImages.push({
-          itemImageSrc: `${TMDB_IMAGE_BASE_URL}/original${logo.filePath}`,
-          thumbnailImageSrc: `${TMDB_IMAGE_BASE_URL}/w185${logo.filePath}`,
-          alt: `Logo ${index + 1}`,
-          type: 'logo'
-        });
+    });
+
+    topN(images.logos, 2).forEach((logo, index) => {
+      allImages.push({
+        itemImageSrc: logo.imageUrl,
+        thumbnailImageSrc: logo.imageUrl,
+        alt: `Logo ${index + 1}`,
+        type: 'logo'
       });
-    }
-    
+    });
+
     return allImages;
   }, [images]);
 
   const itemTemplate = (item) => {
     return (
-      <img 
-        src={item.itemImageSrc} 
-        alt={item.alt} 
-        style={{ 
+      <img
+        src={item.itemImageSrc}
+        alt={item.alt}
+        style={{
           width: '100%',
           maxHeight: '500px',
           display: 'block',
           objectFit: 'contain',
           backgroundColor: item.type === 'logo' ? '#1a1a1a' : 'transparent'
-        }} 
+        }}
+        onError={(e) => { e.target.style.display = 'none'; }}
       />
     );
   };
 
   const thumbnailTemplate = (item) => {
     return (
-      <img 
-        src={item.thumbnailImageSrc} 
-        alt={item.alt} 
-        style={{ 
-          width: '80px', 
+      <img
+        src={item.thumbnailImageSrc}
+        alt={item.alt}
+        style={{
+          width: '80px',
           height: '60px',
-          display: 'block', 
+          display: 'block',
           cursor: 'pointer',
           objectFit: 'cover'
-        }} 
+        }}
+        onError={(e) => { e.target.style.display = 'none'; }}
       />
     );
   };

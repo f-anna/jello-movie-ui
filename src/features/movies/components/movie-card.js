@@ -5,9 +5,7 @@ import { Tag } from 'primereact/tag';
 import './movie-card.css';
 
 export const MovieCard = ({ movie }) => {
-  const posterUrl = movie.posterPath
-    ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
-    : '/placeholder-poster.png';
+  const posterUrl = movie.posterPath ?? '/placeholder-poster.png';
 
   const getRatingColor = (rating) => {
     if (rating >= 7) return 'success';
@@ -17,11 +15,13 @@ export const MovieCard = ({ movie }) => {
 
   const header = (
     <div className="movie-card-poster-container">
-      <img 
-        src={posterUrl} 
+      <img
+        src={posterUrl}
         alt={movie.title}
         className="movie-card-poster"
+        loading="lazy"
         onError={(e) => {
+          e.target.onerror = null;
           e.target.src = '/placeholder-poster.png';
         }}
       />

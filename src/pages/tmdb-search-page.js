@@ -168,13 +168,11 @@ const TmdbSearchPage = () => {
                   <div className="tmdb-result-content">
                     <div className="tmdb-result-poster">
                       <img
-                        src={
-                          movie.posterPath
-                            ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
-                            : '/placeholder-poster.png'
-                        }
+                        src={movie.posterPath ?? '/placeholder-poster.png'}
                         alt={movie.title}
+                        loading="lazy"
                         onError={(e) => {
+                          e.target.onerror = null;
                           e.target.src = '/placeholder-poster.png';
                         }}
                       />

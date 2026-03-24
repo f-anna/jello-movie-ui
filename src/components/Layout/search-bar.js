@@ -122,6 +122,7 @@ export const SearchBar = () => {
                         alt={movie.title}
                         className="search-result-poster"
                         onError={(e) => {
+                          e.target.onerror = null;
                           e.target.src = '/placeholder-poster.png';
                         }}
                       />

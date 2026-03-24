@@ -19,9 +19,7 @@ export const ListItemCard = ({ movie, listId, listItem, onRemoved, readOnly = fa
   const [deletingComment, setDeletingComment] = useState(false);
   const toast = useRef(null);
 
-  const posterUrl = movie.posterPath
-    ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
-    : '/placeholder-poster.png';
+  const posterUrl = movie.posterPath ?? '/placeholder-poster.png';
 
   const getRatingColor = (rating) => {
     if (rating >= 7) return 'success';
@@ -159,7 +157,9 @@ export const ListItemCard = ({ movie, listId, listItem, onRemoved, readOnly = fa
               <img
                 src={posterUrl}
                 alt={movie.title}
+                loading="lazy"
                 onError={(e) => {
+                  e.target.onerror = null;
                   e.target.src = '/placeholder-poster.png';
                 }}
               />

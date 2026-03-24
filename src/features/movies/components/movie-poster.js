@@ -119,10 +119,14 @@ export const MoviePoster = ({ movie }) => {
     <div className="movie-poster">
       <Toast ref={toast} />
       {movie.posterPath ? (
-        <img 
-          src={movie.posterPath} 
-          alt={movie.title} 
+        <img
+          src={movie.posterPath}
+          alt={movie.title}
           className="poster-image"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/placeholder-poster.png';
+          }}
         />
       ) : (
         <div className="poster-placeholder">

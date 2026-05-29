@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_HOST } from '../../../lib/api-client';
 
 const authClient = axios.create({
-  baseURL: 'https://localhost:7151',
+  baseURL: API_HOST,
   withCredentials: true,
 });
 

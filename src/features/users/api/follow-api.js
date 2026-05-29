@@ -1,5 +1,5 @@
-const API_BASE_URL = 'https://localhost:7151';
-const BASE = `${API_BASE_URL}/api/follow`;
+import { API_HOST } from '../../../lib/api-client';
+const BASE = `${API_HOST}/api/follow`;
 
 async function handleResponse(response) {
   if (!response.ok) {

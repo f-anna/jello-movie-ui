@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://localhost:7151';
+import { API_HOST as API_BASE_URL } from '../../../lib/api-client';
 
 const apiFetch = async (url, options = {}) => {
   const response = await fetch(url, { ...options, redirect: 'manual' });

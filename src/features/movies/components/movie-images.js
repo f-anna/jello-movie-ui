@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useMemo, useRef, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { Galleria } from 'primereact/galleria';
 import { Card } from 'primereact/card';
 import { getImageUrl } from '../../../lib/api-client';
@@ -62,6 +62,13 @@ export const MovieImages = forwardRef(({ images, posterPath, movieTitle, headles
 
     return allImages;
   }, [images, posterPath, movieTitle]);
+
+  useEffect(() => {
+    displayImages.forEach(({ itemImageSrc }) => {
+      const img = new Image();
+      img.src = itemImageSrc;
+    });
+  }, [displayImages]);
 
   const itemTemplate = (item) => {
     return (

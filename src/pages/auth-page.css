@@ -127,6 +127,13 @@
   width: 100%;
 }
 
+.auth-form .p-floatlabel input,
+.auth-form .p-floatlabel .p-password-input {
+  border-radius: 9999px;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
 .auth-submit-btn {
   margin-top: 0.25rem;
   height: 2.8rem;

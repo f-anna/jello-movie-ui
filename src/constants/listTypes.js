@@ -1,5 +1,4 @@
 // Must match BLL\Enums\ListTypeEnum.cs
-// TODO:  maybe an endpoint for this?
 export const LIST_TYPES = {
   CUSTOM: 1,
   COMPLETED: 2,
@@ -20,12 +19,19 @@ export const LIST_TYPE_NAMES = {
   7: 'Bookmarked',
 };
 
-// Helper to get list type name
 export const getListTypeName = (typeId) => {
   return LIST_TYPE_NAMES[typeId] || 'Unknown';
 };
 
-// Helper to check if list type is predefined
-export const isPredefinedListType = (typeId) => {
-  return typeId !== LIST_TYPES.CUSTOM;
+export const getListBadgeClassName = (listTypeId) => {
+  switch (listTypeId) {
+    case LIST_TYPES.CUSTOM:      return 'list-badge list-badge-custom';
+    case LIST_TYPES.COMPLETED:   return 'list-badge list-badge-completed';
+    case LIST_TYPES.WATCHING:    return 'list-badge list-badge-watching';
+    case LIST_TYPES.PLANNED:     return 'list-badge list-badge-planned';
+    case LIST_TYPES.DROPPED:     return 'list-badge list-badge-dropped';
+    case LIST_TYPES.FAVORITE:    return 'list-badge list-badge-favorite';
+    case LIST_TYPES.BOOKMARKED:  return 'list-badge list-badge-bookmarked';
+    default:                     return 'list-badge';
+  }
 };

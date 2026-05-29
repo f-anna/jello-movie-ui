@@ -1,107 +1,137 @@
-.users-list-container {
-  margin-bottom: 3rem;
+.top-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.users-list-title {
-  font-size: 1.75rem;
+.top-sidebar-loading,
+.top-sidebar-error {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.top-sidebar-block {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.top-sidebar-title {
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  margin: 0 0 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.users-list-title .pi {
-  color: var(--primary-color);
-}
-
-.users-list-loading,
-.users-list-error,
-.users-list-empty {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-}
-
-.users-list-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.25rem;
-}
-
-/* Card base */
-.user-card {
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-  border: 1px solid var(--surface-border);
-  overflow: hidden;
-}
-
-.user-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.13);
-  border-color: var(--primary-color);
-}
-
-.user-card .p-card-body,
-.user-card .p-card-content {
-  padding: 0;
-}
-
-/* Gradient banner at top */
-.user-card-header {
-  height: 64px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600, #1565c0) 100%);
-}
-
-/* Body: avatar overlaps the banner */
-.user-card-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 1rem 1.25rem;
-  margin-top: -32px;
-  text-align: center;
-  gap: 0.6rem;
-}
-
-/* Avatar with white border to "pop" off the banner */
-.user-avatar {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600, #1565c0) 100%);
-  color: #fff;
-  font-weight: 700;
-  border: 3px solid var(--surface-0);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
-  flex-shrink: 0;
-}
-
-.user-email {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
   color: var(--text-color);
 }
 
-/* Chip acts as a subtle CTA */
-.user-card-chip {
-  font-size: 0.78rem;
-  background: var(--primary-50, #e8f4fd);
+.top-sidebar-title .pi {
   color: var(--primary-color);
-  border: 1px solid var(--primary-200, #90caf9);
-  padding: 0.2rem 0.6rem;
+  font-size: 0.95rem;
 }
 
-.user-card-chip .p-chip-icon {
+.top-sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.top-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.top-sidebar-item:hover {
+  background: var(--primary-50, #eff6ff);
+}
+
+.top-sidebar-avatar {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600, #1565c0) 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.top-sidebar-list-icon {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600, #1565c0) 100%);
+  color: #fff;
+}
+
+.top-sidebar-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.top-sidebar-item-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-sidebar-item-meta {
   font-size: 0.75rem;
+  color: var(--text-color-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-@media (max-width: 768px) {
-  .users-list-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
+.top-sidebar-item-meta i {
+  font-size: 0.7rem;
+  color: var(--primary-color);
+}
+
+.top-sidebar-item-text > .top-sidebar-item-meta {
+  margin-top: 0.25rem;
+  align-self: flex-end;
+}
+
+.top-sidebar-item-author {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.top-sidebar-item-author i {
+  font-size: 0.7rem;
+  color: var(--primary-color);
+}
+
+.top-sidebar-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  margin-top: 0.25rem;
 }

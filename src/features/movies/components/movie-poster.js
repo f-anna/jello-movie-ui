@@ -1,138 +1,52 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { listService } from '../api/list-api';
-import { LIST_TYPES } from '../../../constants/listTypes';
 import { useAuth } from '../../users/context/auth-context';
+import { getImageUrl, PLACEHOLDER_POSTER } from '../../../lib/api-client';
+import { useFavoriteBookmark } from '../hooks/useFavoriteBookmark';
 
-export const MoviePoster = ({ movie }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const toast = useRef(null);
+export const MoviePoster = ({ movie, compact = false }) => {
+  const [imageError, setImageError] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { isFavorite, isBookmarked, toggleFavorite, toggleBookmark, toast } =
+    useFavoriteBookmark(movie.id);
 
-  const checkInitialStatus = useCallback(async () => {
-    try {
-      const lists = await listService.getAllLists();
-      
-      const favoriteList = lists.find(list => list.listTypeId === LIST_TYPES.FAVORITE);
-      if (favoriteList && favoriteList.listItems) {
-        const isInFavorites = favoriteList.listItems.some(item => item.movieId === movie.id);
-        setIsFavorite(isInFavorites);
-      }
-      
-      const bookmarkList = lists.find(list => list.listTypeId === LIST_TYPES.BOOKMARKED);
-      if (bookmarkList && bookmarkList.listItems) {
-        const isInBookmarks = bookmarkList.listItems.some(item => item.movieId === movie.id);
-        setIsBookmarked(isInBookmarks);
-      }
-    } catch (err) {
-      console.error('Failed to check initial status:', err);
-    }
-  }, [movie.id]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      checkInitialStatus();
-    }
-  }, [checkInitialStatus, isAuthenticated]);
-
-  const handleToggleFavorite = async (e) => {
-    e.stopPropagation();
-    try {
-      const lists = await listService.getAllLists();
-      let favoriteList = lists.find(list => list.listTypeId === LIST_TYPES.FAVORITE);
-      
-      if (!favoriteList) {
-        favoriteList = await listService.createList('Favorites', LIST_TYPES.FAVORITE);
-      }
-
-      if (isFavorite) {
-        await listService.removeMovieFromList(favoriteList.id, movie.id);
-        setIsFavorite(false);
-        toast.current?.show({
-          severity: 'info',
-          summary: 'Removed',
-          detail: 'Removed from favorites',
-          life: 2000,
-        });
-      } else {
-        await listService.addMovieToList(favoriteList.id, movie.id);
-        setIsFavorite(true);
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Added',
-          detail: 'Added to favorites',
-          life: 2000,
-        });
-      }
-    } catch (err) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message,
-        life: 3000,
-      });
-    }
-  };
-
-  const handleToggleBookmark = async (e) => {
-    e.stopPropagation();
-    try {
-      const lists = await listService.getAllLists();
-      let bookmarkList = lists.find(list => list.listTypeId === LIST_TYPES.BOOKMARKED);
-      
-      if (!bookmarkList) {
-        bookmarkList = await listService.createList('Bookmarked', LIST_TYPES.BOOKMARKED);
-      }
-
-      if (isBookmarked) {
-        await listService.removeMovieFromList(bookmarkList.id, movie.id);
-        setIsBookmarked(false);
-        toast.current?.show({
-          severity: 'info',
-          summary: 'Removed',
-          detail: 'Removed bookmark',
-          life: 2000,
-        });
-      } else {
-        await listService.addMovieToList(bookmarkList.id, movie.id);
-        setIsBookmarked(true);
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Added',
-          detail: 'Bookmarked',
-          life: 2000,
-        });
-      }
-    } catch (err) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message,
-        life: 3000,
-      });
-    }
-  };
+  if (compact) {
+    if (!isAuthenticated) return null;
+    return (
+      <div className="movie-quick-actions">
+        <Toast ref={toast} />
+        <Button
+          icon={isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'}
+          rounded
+          outlined
+          severity={isFavorite ? 'danger' : 'secondary'}
+          onClick={toggleFavorite}
+          tooltip={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          tooltipOptions={{ position: 'top' }}
+        />
+        <Button
+          icon={isBookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'}
+          rounded
+          outlined
+          severity={isBookmarked ? 'info' : 'secondary'}
+          onClick={toggleBookmark}
+          tooltip={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+          tooltipOptions={{ position: 'top' }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="movie-poster">
       <Toast ref={toast} />
-      {movie.posterPath ? (
-        <img
-          src={movie.posterPath}
-          alt={movie.title}
-          className="poster-image"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = '/placeholder-poster.png';
-          }}
-        />
-      ) : (
-        <div className="poster-placeholder">
-          <i className="pi pi-image" style={{ fontSize: '4rem' }}></i>
-        </div>
-      )}
+      <img
+        src={movie.posterPath && !imageError ? getImageUrl(movie.posterPath) : PLACEHOLDER_POSTER}
+        alt={movie.title}
+        className="poster-image"
+        onError={() => setImageError(true)}
+      />
       {isAuthenticated && (
         <div className="poster-quick-actions">
           <Button
@@ -140,14 +54,20 @@ export const MoviePoster = ({ movie }) => {
             rounded
             text
             severity={isFavorite ? 'danger' : 'secondary'}
-            onClick={handleToggleFavorite}
+            onClick={toggleFavorite}
+            size="small"
+            tooltip={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            tooltipOptions={{ position: 'left' }}
           />
           <Button
             icon={isBookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'}
             rounded
             text
             severity={isBookmarked ? 'info' : 'secondary'}
-            onClick={handleToggleBookmark}
+            onClick={toggleBookmark}
+            size="small"
+            tooltip={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+            tooltipOptions={{ position: 'left' }}
           />
         </div>
       )}

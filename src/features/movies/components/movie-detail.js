@@ -1,24 +1,58 @@
-import React, { useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card } from 'primereact/card';
+import React, { useRef, useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { Button } from 'primereact/button';
+import { Divider } from 'primereact/divider';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
-import { Divider } from 'primereact/divider';
+import { Toast } from 'primereact/toast';
 import { useMovieDetails } from '../hooks/useMovieDetails';
-import { MovieHeader } from './movie-header';
-import { MovieMetadata } from './movie-metadata';
-import { MovieSynopsis } from './movie-synopsis';
 import { MoviePoster } from './movie-poster';
 import { MovieRating } from './movie-rating';
 import { MovieActions } from './movie-actions';
 import { MovieImages } from './movie-images';
 import { MoviePublicLists } from './movie-public-lists';
+import { listService } from '../api/list-api';
+import { useAuth } from '../../users/context/auth-context';
 import './movie-detail.css';
+
+const formatLength = (minutes) => {
+  if (!minutes) return null;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+};
+
+const formatYear = (dateString) => {
+  if (!dateString) return null;
+  return new Date(dateString).getFullYear();
+};
 
 export const MovieDetail = () => {
   const { id } = useParams();
   const { movie, images, loading, error } = useMovieDetails(id);
+  const { isAuthenticated } = useAuth();
   const movieActionsRef = useRef(null);
+  const galleryRef = useRef(null);
+  const toastRef = useRef(null);
+  const [movieStatusName, setMovieStatusName] = useState(null);
+
+  useEffect(() => {
+    if (!isAuthenticated || !id) return;
+    listService.getMovieStatus(id)
+      .then(data => { if (data) setMovieStatusName(data.listType?.typeName ?? null); })
+      .catch(() => {});
+  }, [isAuthenticated, id]);
+
+  const handleOpenGallery = () => {
+    if (!galleryRef.current?.open()) {
+      toastRef.current?.show({
+        severity: 'info',
+        summary: 'No images',
+        detail: 'There are no gallery images available for this movie.',
+        life: 3000,
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -44,76 +78,117 @@ export const MovieDetail = () => {
     );
   }
 
-  const formatLength = (minutes) => {
-    if (!minutes) return 'N/A';
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.getFullYear();
-  };
-
-  const genres = movie.genres?.map(g => g.genreName) || [];
-
-  const handleAddToList = () => {
-    movieActionsRef.current?.openAddToListDialog();
-  };
-
-  const handleEditStatus = () => {
-    movieActionsRef.current?.openEditStatusDialog();
-  };
+  const year = formatYear(movie.releaseDate);
+  const length = formatLength(movie.length);
+  const language = movie.language?.toUpperCase();
+  const genres = movie.genres || [];
 
   return (
     <div className="movie-detail-page">
+      <Toast ref={toastRef} />
       <div className="movie-detail-container">
-        <MovieHeader 
-          movie={movie} 
-          formatDate={formatDate}
-        />
+        <section className="movie-hero">
+          <div className="movie-hero-info">
+            <div className="movie-hero-info-top">
+              <div className="movie-hero-info-text">
+                <div className="movie-hero-title-row">
+                  <h1 className="movie-hero-title">{movie.title}</h1>
+                  {year && <span className="movie-hero-year">{year}</span>}
+                </div>
 
-        <div className="movie-content-grid">
-          <div className="movie-info-section">
-            <Card className="movie-info-card">
-              <MovieMetadata 
-                movie={movie} 
-                formatDate={formatDate} 
-                formatLength={formatLength}
-                onAddToList={handleAddToList}
-                onEditStatus={handleEditStatus}
-              />
-              
-              <Divider />
+                <div className="movie-hero-rating">
+                  <MovieRating rating={movie.rating} voteCount={movie.voteCount} />
+                </div>
 
-              <MovieSynopsis 
-                overview={movie.overview} 
-                genres={genres}
-                rating={movie.rating}
-                voteCount={movie.voteCount}
-              />
-            </Card>
+                <div className="movie-hero-meta">
+                  {length && (
+                    <span className="movie-hero-meta-item">
+                      <i className="pi pi-clock" /> {length}
+                    </span>
+                  )}
+                  {language && (
+                    <span className="movie-hero-meta-item">
+                      <i className="pi pi-globe" /> {language}
+                    </span>
+                  )}
+                </div>
 
-            <MovieImages images={images} />
+                {genres.length > 0 && (
+                  <div className="movie-hero-genres">
+                    {genres.map((g) => (
+                      <Link
+                        key={g.id}
+                        to={`/genres?genreIds=${g.id}`}
+                        className="genre-chip-link"
+                      >
+                        {g.genreName}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-            <MoviePublicLists movieId={movie.id} />
+              {isAuthenticated && (
+                <div className="movie-hero-actions">
+                  <Button
+                    label={movieStatusName ?? "Edit status"}
+                    icon="pi pi-pencil"
+                    className=""
+                    onClick={() => movieActionsRef.current?.openEditStatusDialog()}
+                  />
+                  <Button
+                    label="Add to list"
+                    icon="pi pi-plus"
+                    outlined
+                    className=""
+                    onClick={() => movieActionsRef.current?.openAddToListDialog()}
+                  />
+                </div>
+              )}
+            </div>
+
+            {movie.overview && (
+              <>
+                <Divider />
+                <div className="movie-hero-synopsis">
+                  <h2 className="movie-section-title">Synopsis</h2>
+                  <p className="movie-section-text">{movie.overview}</p>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="movie-sidebar">
+          <div className="movie-hero-poster">
             <MoviePoster movie={movie} />
-
-            <MovieActions 
-              ref={movieActionsRef}
-              movieId={movie.id} 
-              movieTitle={movie.title} 
-              hideQuickActions 
-              hideButtons
+            <Button
+              label="Open gallery"
+              icon="pi pi-images"
+              outlined
+              className="movie-hero-gallery-btn"
+              onClick={handleOpenGallery}
             />
           </div>
-        </div>
+        </section>
+
+        <MovieImages
+          ref={galleryRef}
+          images={images}
+          posterPath={movie.posterPath}
+          movieTitle={movie.title}
+          headless
+        />
+
+        <MoviePublicLists movieId={movie.id} />
       </div>
+
+      <MovieActions
+        ref={movieActionsRef}
+        movieId={movie.id}
+        movieTitle={movie.title}
+        hideQuickActions
+        hideButtons
+        onStatusChange={setMovieStatusName}
+      />
     </div>
   );
 };

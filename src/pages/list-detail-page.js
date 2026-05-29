@@ -11,7 +11,7 @@ import { listService } from '../features/movies/api/list-api';
 import { followService } from '../features/users/api/follow-api';
 import { useAuth } from '../features/users/context/auth-context';
 import { ListItemCard } from '../features/movies/components/list-item-card';
-import { getListTypeName, LIST_TYPES } from '../constants/listTypes';
+import { getListTypeName, LIST_TYPES, getListBadgeClassName } from '../constants/listTypes';
 import './list-detail-page.css';
 
 const ListDetailPage = () => {
@@ -113,19 +113,6 @@ const ListDetailPage = () => {
     }
   };
 
-  const getListBadgeSeverity = (listTypeId) => {
-    switch (listTypeId) {
-      case LIST_TYPES.COMPLETED: return 'success';
-      case LIST_TYPES.WATCHING: return 'info';
-      case LIST_TYPES.PLANNED: return 'warning';
-      case LIST_TYPES.DROPPED: return 'danger';
-      case LIST_TYPES.FAVORITE: return 'danger';
-      case LIST_TYPES.BOOKMARKED: return 'help';
-      case LIST_TYPES.CUSTOM: return 'info';
-      default: return 'info';
-    }
-  };
-
   if (loading) {
     return (
       <div className="list-detail-page-loading">
@@ -171,7 +158,7 @@ const ListDetailPage = () => {
                 <h1>{list.name}</h1>
                 <Badge
                   value={getListTypeName(list.listTypeId)}
-                  severity={getListBadgeSeverity(list.listTypeId)}
+                  className={getListBadgeClassName(list.listTypeId)}
                   size="large"
                 />
               </div>
@@ -207,16 +194,18 @@ const ListDetailPage = () => {
             </div>
           )}
 
-          {!isOwnList && isAuthenticated && list.isPublic && (
+          {!isOwnList && isAuthenticated && (
             <div className="list-detail-actions">
-              <Button
-                label={isFollowing ? 'Unfollow List' : 'Follow List'}
-                icon={isFollowing ? 'pi pi-bookmark' : 'pi pi-bookmark'}
-                severity={isFollowing ? 'secondary' : 'primary'}
-                outlined={isFollowing}
-                loading={followLoading}
-                onClick={handleFollowToggle}
-              />
+              {list.isPublic && (
+                <Button
+                  label={isFollowing ? 'Followed' : 'Follow List'}
+                  icon="pi pi-bookmark"
+                  severity={isFollowing ? 'secondary' : 'primary'}
+                  outlined={isFollowing}
+                  loading={followLoading}
+                  onClick={handleFollowToggle}
+                />
+              )}
             </div>
           )}
         </div>
@@ -237,7 +226,7 @@ const ListDetailPage = () => {
             </div>
           ) : (
             <div className="list-detail-empty">
-              <i className="pi pi-inbox" style={{ fontSize: '3rem', color: '#ccc' }}></i>
+              <i className="pi pi-inbox empty-state-icon"></i>
               <h3>No movies in this list yet</h3>
               {isOwnList && (
                 <>

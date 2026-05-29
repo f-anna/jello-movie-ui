@@ -4,6 +4,7 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { searchLocalMovies } from '../../features/movies/api/search-api';
+import { getImageUrl, PLACEHOLDER_POSTER } from '../../lib/api-client';
 import './search-bar.css';
 
 export const SearchBar = () => {
@@ -26,7 +27,7 @@ export const SearchBar = () => {
       setIsLoading(true);
       
       try {
-        const data = await searchLocalMovies(searchQuery, 1, 5);
+        const data = await searchLocalMovies(searchQuery, 1, 4);
         setLocalResults(data.results || []);
       } catch (error) {
         console.error('Search error:', error);
@@ -36,7 +37,7 @@ export const SearchBar = () => {
       }
     };
 
-    const timeoutId = setTimeout(searchLocal, 300);
+    const timeoutId = setTimeout(searchLocal, 500);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
@@ -105,7 +106,7 @@ export const SearchBar = () => {
         <div className="search-results-dropdown">
           {isLoading ? (
             <div className="flex justify-content-center align-items-center py-3">
-              <ProgressSpinner style={{ width: '30px', height: '30px' }} />
+              <ProgressSpinner className="spinner-xs" />
             </div>
           ) : (
             <>
@@ -118,12 +119,12 @@ export const SearchBar = () => {
                       onClick={() => handleMovieClick(movie.id)}
                     >
                       <img
-                        src={movie.posterPath || '/placeholder-poster.png'}
+                        src={getImageUrl(movie.posterPath)}
                         alt={movie.title}
                         className="search-result-poster"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = '/placeholder-poster.png';
+                          e.target.src = PLACEHOLDER_POSTER;
                         }}
                       />
                       <div className="search-result-info">

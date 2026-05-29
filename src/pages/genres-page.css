@@ -1,0 +1,144 @@
+.genres-page-filter {
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+}
+
+.genre-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.genre-filter-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.genre-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--text-color-secondary);
+  font-size: 1rem;
+  line-height: 1.25;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.genre-filter-toggle:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.genre-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.genre-filter-caret {
+  font-size: 0.75rem;
+  margin-left: 0.15rem;
+}
+
+.genre-filter-clear {
+  padding: 0.25rem 0.5rem !important;
+}
+
+.genre-filter-panel {
+  padding: 0.75rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  background: var(--surface-card);
+}
+
+.genre-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.genre-filter-chip {
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color);
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.05s;
+  font-family: inherit;
+}
+
+.genre-filter-chip:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.genre-filter-chip:active {
+  transform: scale(0.97);
+}
+
+.genre-filter-chip-active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+  font-weight: 500;
+}
+
+.genre-filter-chip-active:hover {
+  background: var(--primary-600, #1f6fc4);
+  border-color: var(--primary-600, #1f6fc4);
+  color: #fff;
+}
+
+.genres-page-results {
+  padding: 0 2rem 2rem;
+}
+
+.genres-page-results-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: var(--text-color);
+}
+
+.genres-page-results-count {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-color-secondary);
+}
+
+.genres-page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .genres-page-filter,
+  .genres-page-results {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .genres-page-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+  }
+}

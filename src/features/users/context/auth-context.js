@@ -4,14 +4,13 @@ import { userService } from '../api/user-api';
 
 const AuthContext = createContext(null);
 
-const enrichWithProfile = async (base) => {
-  try {
-    const me = await userService.getMe();
-    return { ...base, id: me.id, username: me.userName || base.username };
-  } catch {
-    return base;
-  }
-};
+const mapMe = (me) => ({
+  id: me.id,
+  username: me.userName ?? null,
+  email: me.email ?? null,
+  profilePictureUrl: me.profilePictureUrl ?? null,
+  isAdmin: me.isAdmin === true,
+});
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -26,44 +25,45 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // check if prev logged in
-    checkAuth();
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await userService.getMe();
+        if (!cancelled) setUser(mapMe(me));
+      } catch {
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const checkAuth = () => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+  const login = async (credentials) => {
+    await authApi.login(credentials);
+    const next = mapMe(await userService.getMe());
+    setUser(next);
+    return next;
   };
 
-  const login = async (credentials) => {
-    const userData = await authApi.login(credentials);
-    const enriched = await enrichWithProfile(userData);
-    setUser(enriched);
-    localStorage.setItem('user', JSON.stringify(enriched));
-    return enriched;
+  const register = async (userData) => {
+    await authApi.register(userData);
+    const next = mapMe(await userService.getMe());
+    setUser(next);
+    return next;
   };
 
   const updateUsername = async (newUsername) => {
     await authApi.updateUsername(newUsername);
-    const updated = { ...user, username: newUsername };
-    setUser(updated);
-    localStorage.setItem('user', JSON.stringify(updated));
+    setUser(mapMe(await userService.getMe()));
   };
 
-  const register = async (userData) => {
-    const newUser = await authApi.register(userData);
-    const enriched = await enrichWithProfile(newUser);
-    setUser(enriched);
-    localStorage.setItem('user', JSON.stringify(enriched));
-    return enriched;
+  const refreshUser = async () => {
+    const next = mapMe(await userService.getMe());
+    setUser(next);
+    return next;
   };
 
   const logout = async () => {
@@ -73,7 +73,6 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout API call failed:', error);
     } finally {
       setUser(null);
-      localStorage.removeItem('user');
     }
   };
 
@@ -84,6 +83,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUsername,
+    refreshUser,
     isAuthenticated: !!user,
   };
 

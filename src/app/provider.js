@@ -3,12 +3,11 @@ import { PrimeReactProvider } from 'primereact/api';
 import { AuthProvider } from '../features/users/context/auth-context';
 
 export const AppProvider = ({ children }) => {
-  // PrimeReact configuration
   const primeReactConfig = {
     ripple: true,
-    inputStyle: 'outlined', // Use outlined input style
+    inputStyle: 'outlined',
     locale: 'en',
-    appendTo: 'self', // Append overlays to component itself
+    appendTo: 'self',
   };
 
   return (

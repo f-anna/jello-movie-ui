@@ -1,5 +1,3 @@
-// TODO: not in use used by movie-list-actions-menu.js wich is currently not in use
-
 import { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
@@ -29,9 +27,6 @@ export const AddToListDialog = ({ visible, onHide, movieId, movieTitle }) => {
     
     try {
       const userLists = await listService.getAllLists();
-      // Filter to show only custom lists
-      //const customLists = userLists.filter(list => list.listTypeId === LIST_TYPES.CUSTOM);
-      //setLists(customLists);
       setLists(userLists);
     } catch (err) {
       setError(err.message);
@@ -108,7 +103,7 @@ export const AddToListDialog = ({ visible, onHide, movieId, movieTitle }) => {
     <Dialog
       header={`Add "${movieTitle}" to List`}
       visible={visible}
-      style={{ width: '450px' }}
+      className="dialog-md"
       footer={dialogFooter}
       onHide={handleClose}
       modal

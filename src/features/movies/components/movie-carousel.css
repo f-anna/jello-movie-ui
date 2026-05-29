@@ -1,13 +1,31 @@
 .movie-carousel-container {
-  margin: 2rem 0;
+  margin: 0.1rem 0;
   padding: 0 4rem;
 }
 
 .movie-carousel-title {
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   color: var(--text-color);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.movie-carousel-subtitle {
+  font-size: 1rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-color-secondary);
+}
+
+.movie-carousel-divider {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-color-secondary);
+  align-self: center;
 }
 
 .movie-carousel {
@@ -22,9 +40,14 @@
 .movie-carousel .p-carousel-item {
   display: flex;
   align-items: stretch;
-  width: 250px;
-  max-width: 250px;
-  flex-shrink: 0;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 0.25rem;
+}
+
+.movie-carousel .p-carousel-item > * {
+  width: 100%;
+  min-width: 0;
 }
 
 .movie-carousel-empty {
@@ -42,18 +65,58 @@
   color: var(--text-color-secondary);
 }
 
-/* Adjust carousel navigation buttons */
 .movie-carousel .p-carousel-prev,
 .movie-carousel .p-carousel-next {
   z-index: 2;
-  background-color: rgba(60, 96, 224, 0.729);
-  color: white;
-  width: 3rem;
-  height: 3rem;
+  background-color: var(--primary-color);
+  color: #fff;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .movie-carousel .p-carousel-prev:hover,
 .movie-carousel .p-carousel-next:hover {
-  background-color: rgba(116, 148, 235, 0.837);
+  background-color: var(--primary-600, #1f5db0);
+  opacity: 1;
+}
+
+.movie-carousel .p-carousel-prev .p-icon,
+.movie-carousel .p-carousel-next .p-icon,
+.movie-carousel .p-carousel-prev:focus,
+.movie-carousel .p-carousel-next:focus {
+  color: #fff;
+  box-shadow: none;
+}
+
+@media (max-width: 992px) {
+  .movie-carousel-container {
+    padding: 0 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .movie-carousel-container {
+    padding: 0 1.5rem;
+    margin: 1rem 0;
+  }
+
+  .movie-carousel-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .movie-carousel .p-carousel-prev,
+  .movie-carousel .p-carousel-next {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .movie-carousel-container {
+    padding: 0 1rem;
+  }
 }

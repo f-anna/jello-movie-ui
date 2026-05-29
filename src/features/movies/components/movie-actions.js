@@ -1,69 +1,74 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { ListBox } from 'primereact/listbox';
-import { InputText } from 'primereact/inputtext';
-import { InputSwitch } from 'primereact/inputswitch';
 import { Toast } from 'primereact/toast';
 import { listService } from '../api/list-api';
 import { LIST_TYPES } from '../../../constants/listTypes';
 import { useAuth } from '../../users/context/auth-context';
+import { CreateCustomListForm } from './create-custom-list-form';
+import { useFavoriteBookmark } from '../hooks/useFavoriteBookmark';
 
-export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickActions = false, hideButtons = false }, ref) => {
+export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickActions = false, hideButtons = false, onStatusChange }, ref) => {
   const [addToListVisible, setAddToListVisible] = useState(false);
   const [editStatusVisible, setEditStatusVisible] = useState(false);
+  const [createListVisible, setCreateListVisible] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(null);
+  const [currentStatusName, setCurrentStatusName] = useState(null);
   const [selectedList, setSelectedList] = useState(null);
-  const [newListName, setNewListName] = useState('');
-  const [newListIsPublic, setNewListIsPublic] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [userLists, setUserLists] = useState([]);
   const [loading, setLoading] = useState(false);
-  const toast = useRef(null);
   const { isAuthenticated } = useAuth();
+  const { isFavorite, isBookmarked, toggleFavorite, toggleBookmark, toast } =
+    useFavoriteBookmark(movieId, { enabled: !hideQuickActions });
 
   React.useImperativeHandle(ref, () => ({
     openAddToListDialog: () => setAddToListVisible(true),
     openEditStatusDialog: () => setEditStatusVisible(true)
   }));
 
-  const checkInitialStatus = useCallback(async () => {
-    try {
-      const lists = await listService.getAllLists();
-      
-      // Check if movie is in favorite list
-      const favoriteList = lists.find(list => list.listTypeId === LIST_TYPES.FAVORITE);
-      if (favoriteList && favoriteList.listItems) {
-        const isInFavorites = favoriteList.listItems.some(item => item.movieId === movieId);
-        setIsFavorite(isInFavorites);
-      }
-      
-      // Check if movie is in bookmark list
-      const bookmarkList = lists.find(list => list.listTypeId === LIST_TYPES.BOOKMARKED);
-      if (bookmarkList && bookmarkList.listItems) {
-        const isInBookmarks = bookmarkList.listItems.some(item => item.movieId === movieId);
-        setIsBookmarked(isInBookmarks);
-      }
-    } catch (err) {
-      console.error('Failed to check initial status:', err);
-      // Don't show error toast for initial check, just log it
-    }
-  }, [movieId]);
-
   useEffect(() => {
-    if (isAuthenticated) {
-      checkInitialStatus();
-    }
-  }, [checkInitialStatus, isAuthenticated]);
+    if (!isAuthenticated) return;
+    listService.getMovieStatus(movieId)
+      .then(data => {
+        if (data) {
+          setCurrentStatusName(data.listType?.typeName ?? null);
+          setCurrentStatus(data.listTypeId ?? null);
+        }
+      })
+      .catch(() => {});
+  }, [isAuthenticated, movieId]);
 
   useEffect(() => {
     if (addToListVisible) {
       loadLists();
     }
   }, [addToListVisible]);
+
+  useEffect(() => {
+    if (!editStatusVisible || !isAuthenticated) return;
+
+    const loadCurrentStatus = async () => {
+      try {
+        const lists = await listService.getAllLists();
+        const statusTypes = [LIST_TYPES.PLANNED, LIST_TYPES.WATCHING, LIST_TYPES.COMPLETED, LIST_TYPES.DROPPED];
+        const match = lists.find((list) =>
+          statusTypes.includes(list.listTypeId)
+          && list.listItems?.some((item) => item.movieId === movieId)
+        );
+        const status = match ? match.listTypeId : null;
+        setCurrentStatus(status);
+        setSelectedStatus(status);
+      } catch (err) {
+        console.error('Failed to load current status:', err);
+      }
+    };
+
+    loadCurrentStatus();
+  }, [editStatusVisible, isAuthenticated, movieId]);
 
   const loadLists = async () => {
     setLoading(true);
@@ -96,35 +101,22 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
   ];
 
   const handleAddToList = async () => {
-    if (!selectedList && !newListName) return;
+    if (!selectedList) return;
 
     setLoading(true);
     try {
-      let listId;
-      
-      if (newListName) {
-        // Create new custom list
-        const newList = await listService.createCustomList(newListName.trim(), null, newListIsPublic);
-        listId = newList.id;
-      } else {
-        // Use selected list - selectedList is the full object with { label, value, listData }
-        listId = selectedList?.value || selectedList;
-      }
-
-      // Add movie to list
+      const listId = selectedList?.value || selectedList;
       await listService.addMovieToList(listId, movieId);
-      
+
       toast.current?.show({
         severity: 'success',
         summary: 'Success',
         detail: `Added "${movieTitle}" to list`,
         life: 3000,
       });
-      
+
       setAddToListVisible(false);
       setSelectedList(null);
-      setNewListName('');
-      setNewListIsPublic(false);
     } catch (err) {
       toast.current?.show({
         severity: 'error',
@@ -135,6 +127,11 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleListCreated = async () => {
+    setCreateListVisible(false);
+    await loadLists();
   };
 
   const handleEditStatus = async () => {
@@ -168,13 +165,18 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
       // Add to new status list
       await listService.addMovieToList(targetList.id, movieId);
       
+      const updatedLabel = statuses.find(s => s.value === selectedStatus)?.label ?? null;
+      setCurrentStatus(selectedStatus);
+      setCurrentStatusName(updatedLabel);
+      onStatusChange?.(updatedLabel);
+
       toast.current?.show({
         severity: 'success',
         summary: 'Success',
-        detail: `Status updated to ${statuses.find(s => s.value === selectedStatus)?.label}`,
+        detail: `Status updated to ${updatedLabel}`,
         life: 3000,
       });
-      
+
       setEditStatusVisible(false);
       setSelectedStatus(null);
     } catch (err) {
@@ -186,96 +188,6 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleToggleFavorite = async () => {
-    try {
-      if (!isFavorite) {
-        // Add to favorites
-        const lists = await listService.getAllLists();
-        let favoriteList = lists.find(list => list.listTypeId === LIST_TYPES.FAVORITE);
-        
-        if (!favoriteList) {
-          favoriteList = await listService.createPredefinedList(LIST_TYPES.FAVORITE);
-        }
-        
-        await listService.addMovieToList(favoriteList.id, movieId);
-        setIsFavorite(true);
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Added to favorites',
-          life: 3000,
-        });
-      } else {
-        // Remove from favorites
-        const lists = await listService.getAllLists();
-        const favoriteList = lists.find(list => list.listTypeId === LIST_TYPES.FAVORITE);
-        
-        if (favoriteList) {
-          await listService.removeMovieFromList(favoriteList.id, movieId);
-          setIsFavorite(false);
-          toast.current?.show({
-            severity: 'info',
-            summary: 'Removed',
-            detail: 'Removed from favorites',
-            life: 3000,
-          });
-        }
-      }
-    } catch (err) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message,
-        life: 3000,
-      });
-    }
-  };
-
-  const handleToggleBookmark = async () => {
-    try {
-      if (!isBookmarked) {
-        // Add to bookmarks
-        const lists = await listService.getAllLists();
-        let bookmarkList = lists.find(list => list.listTypeId === LIST_TYPES.BOOKMARKED);
-        
-        if (!bookmarkList) {
-          bookmarkList = await listService.createPredefinedList(LIST_TYPES.BOOKMARKED);
-        }
-        
-        await listService.addMovieToList(bookmarkList.id, movieId);
-        setIsBookmarked(true);
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Added to bookmarks',
-          life: 3000,
-        });
-      } else {
-        // Remove from bookmarks
-        const lists = await listService.getAllLists();
-        const bookmarkList = lists.find(list => list.listTypeId === LIST_TYPES.BOOKMARKED);
-        
-        if (bookmarkList) {
-          await listService.removeMovieFromList(bookmarkList.id, movieId);
-          setIsBookmarked(false);
-          toast.current?.show({
-            severity: 'info',
-            summary: 'Removed',
-            detail: 'Removed from bookmarks',
-            life: 3000,
-          });
-        }
-      }
-    } catch (err) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message,
-        life: 3000,
-      });
     }
   };
 
@@ -296,38 +208,38 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
       {!hideButtons && (
         <Card className="movie-actions">
           <div className="flex flex-column gap-2">
-            <Button 
-              label="Add to list" 
-              icon="pi pi-plus" 
-              className="w-full" 
+            <Button
+              label="Add to list"
+              icon="pi pi-plus"
+              className="w-full"
               onClick={() => setAddToListVisible(true)}
               outlined
             />
-            <Button 
-              label="Edit status" 
-              icon="pi pi-pencil" 
-              className="w-full" 
+            <Button
+              label={currentStatusName ?? "Edit status"}
+              icon="pi pi-pencil"
+              className="w-full"
               onClick={() => setEditStatusVisible(true)}
               outlined
             />
             {!hideQuickActions && (
               <div className="flex align-items-center gap-2 mt-2">
                 <span className="text-sm">Quick Actions:</span>
-                <Button 
-                  icon={isFavorite ? "pi pi-heart-fill" : "pi pi-heart"} 
-                  rounded 
-                  text 
-                  onClick={handleToggleFavorite}
+                <Button
+                  icon={isFavorite ? "pi pi-heart-fill" : "pi pi-heart"}
+                  rounded
+                  text
+                  onClick={toggleFavorite}
                   className="p-button-sm"
                   severity={isFavorite ? "danger" : "secondary"}
                   tooltip="Favorite"
                   tooltipOptions={{ position: 'top' }}
                 />
-                <Button 
-                  icon={isBookmarked ? "pi pi-bookmark-fill" : "pi pi-bookmark"} 
-                  rounded 
-                  text 
-                  onClick={handleToggleBookmark}
+                <Button
+                  icon={isBookmarked ? "pi pi-bookmark-fill" : "pi pi-bookmark"}
+                  rounded
+                  text
+                  onClick={toggleBookmark}
                   className="p-button-sm"
                   severity={isBookmarked ? "info" : "secondary"}
                   tooltip="Bookmark"
@@ -339,20 +251,19 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
         </Card>
       )}
 
-      {/* TODO: move this to different component */}
       <Dialog
         header="Add to List"
         visible={addToListVisible}
-        style={{ width: '450px' }}
+        className="dialog-md"
         onHide={() => setAddToListVisible(false)}
         footer={
           <div>
             <Button label="Cancel" icon="pi pi-times" onClick={() => setAddToListVisible(false)} text disabled={loading} />
-            <Button 
-              label={loading ? "Adding..." : "Add"} 
-              icon="pi pi-check" 
-              onClick={handleAddToList} 
-              disabled={(!selectedList && !newListName) || loading}
+            <Button
+              label={loading ? "Adding..." : "Add"}
+              icon="pi pi-check"
+              onClick={handleAddToList}
+              disabled={!selectedList || loading}
               loading={loading}
             />
           </div>
@@ -361,62 +272,39 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
         <div className="flex flex-column gap-3">
           <div>
             <label htmlFor="existing-list" className="block mb-2 font-semibold">
-              Select Existing List
+              Select a list
             </label>
             <Dropdown
               id="existing-list"
               value={selectedList}
-              onChange={(e) => {
-                setSelectedList(e.value);
-                setNewListName('');
-              }}
+              onChange={(e) => setSelectedList(e.value)}
               options={userLists}
-              placeholder="Select a list"
+              placeholder={userLists.length ? 'Select a list' : 'You have no custom lists yet'}
               className="w-full"
+              emptyMessage="No custom lists"
             />
-          </div>
-          
-          <div className="flex align-items-center gap-2">
-            <div className="flex-1 border-bottom-1 border-300"></div>
-            <span className="text-sm text-500">OR</span>
-            <div className="flex-1 border-bottom-1 border-300"></div>
           </div>
 
-          <div>
-            <label htmlFor="new-list" className="block mb-2 font-semibold">
-              Create New List
-            </label>
-            <InputText
-              id="new-list"
-              value={newListName}
-              onChange={(e) => {
-                setNewListName(e.target.value);
-                setSelectedList(null);
-              }}
-              placeholder="Enter new list name"
-              className="w-full"
-            />
-            {newListName && (
-              <div className="flex align-items-center gap-2 mt-2">
-                <InputSwitch
-                  inputId="new-list-visibility"
-                  checked={newListIsPublic}
-                  onChange={(e) => setNewListIsPublic(e.value)}
-                />
-                <label htmlFor="new-list-visibility" className="mb-0">
-                  {newListIsPublic ? 'Public' : 'Private'} list
-                </label>
-              </div>
-            )}
-          </div>
+          <Button
+            label="Create new list"
+            icon="pi pi-plus"
+            onClick={() => setCreateListVisible(true)}
+            outlined
+            className="align-self-start"
+          />
         </div>
       </Dialog>
 
-      {/* TODO: move this to different component */}
+      <CreateCustomListForm
+        visible={createListVisible}
+        onHide={() => setCreateListVisible(false)}
+        onSuccess={handleListCreated}
+      />
+
       <Dialog
         header="Edit Watch Status"
         visible={editStatusVisible}
-        style={{ width: '400px' }}
+        className="dialog-sm"
         onHide={() => setEditStatusVisible(false)}
         footer={
           <div>
@@ -432,7 +320,6 @@ export const MovieActions = React.forwardRef(({ movieId, movieTitle, hideQuickAc
         }
       >
         <div className="flex flex-column gap-3">
-          <p className="mt-0">Select the watching status for this movie:</p>
           <ListBox
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.value)}

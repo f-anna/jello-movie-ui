@@ -28,9 +28,6 @@ export const followService = {
   async getFollowing() {
     return handleResponse(await fetch(`${BASE}/users/following`, { credentials: 'include' }));
   },
-  async getFollowers() {
-    return handleResponse(await fetch(`${BASE}/users/followers`, { credentials: 'include' }));
-  },
   async getUserFollowStatus(userId) {
     return handleResponse(await fetch(`${BASE}/users/${userId}/status`, { credentials: 'include' }));
   },
@@ -45,5 +42,11 @@ export const followService = {
   },
   async getListFollowStatus(listId) {
     return handleResponse(await fetch(`${BASE}/lists/${listId}/status`, { credentials: 'include' }));
+  },
+  async getTopUsers(count = 10) {
+    return handleResponse(await fetch(`${BASE}/users/top?count=${count}`, { credentials: 'include' }));
+  },
+  async getTopLists(count = 10) {
+    return handleResponse(await fetch(`${BASE}/lists/top?count=${count}`, { credentials: 'include' }));
   },
 };

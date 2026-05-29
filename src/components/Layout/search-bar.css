@@ -5,10 +5,15 @@
 
 .search-bar-container .p-input-icon-left > i:first-of-type {
   left: 0.75rem;
+  pointer-events: none;
 }
 
 .search-bar-container .p-input-icon-right > i:last-of-type {
   right: 0.75rem;
+}
+
+.search-bar-container .p-inputtext {
+  border-radius: 999px;
 }
 
 .search-results-dropdown {

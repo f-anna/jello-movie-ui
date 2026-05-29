@@ -2,16 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { Tag } from 'primereact/tag';
+import { getImageUrl, PLACEHOLDER_POSTER } from '../../../lib/api-client';
+import { getRatingColor } from '../../../lib/utils';
 import './movie-card.css';
 
 export const MovieCard = ({ movie }) => {
-  const posterUrl = movie.posterPath ?? '/placeholder-poster.png';
-
-  const getRatingColor = (rating) => {
-    if (rating >= 7) return 'success';
-    if (rating >= 5) return 'warning';
-    return 'danger';
-  };
+  const posterUrl = getImageUrl(movie.posterPath);
 
   const header = (
     <div className="movie-card-poster-container">
@@ -22,7 +18,7 @@ export const MovieCard = ({ movie }) => {
         loading="lazy"
         onError={(e) => {
           e.target.onerror = null;
-          e.target.src = '/placeholder-poster.png';
+          e.target.src = PLACEHOLDER_POSTER;
         }}
       />
     </div>

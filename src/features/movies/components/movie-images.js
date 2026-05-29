@@ -1,17 +1,37 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Galleria } from 'primereact/galleria';
 import { Card } from 'primereact/card';
+import { getImageUrl } from '../../../lib/api-client';
 
-export const MovieImages = ({ images }) => {
+export const MovieImages = forwardRef(({ images, posterPath, movieTitle, headless = false }, ref) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const fullscreenGalleria = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    open: () => {
+      if (!fullscreenGalleria.current) return false;
+      fullscreenGalleria.current.show();
+      return true;
+    },
+  }));
 
   const displayImages = useMemo(() => {
-    if (!images) return [];
-
     const topN = (arr, n) =>
       [...(arr ?? [])].sort((a, b) => b.voteAverage - a.voteAverage).slice(0, n);
 
     const allImages = [];
+
+    if (posterPath) {
+      const url = getImageUrl(posterPath);
+      allImages.push({
+        itemImageSrc: url,
+        thumbnailImageSrc: url,
+        alt: movieTitle || 'Poster',
+        type: 'poster',
+      });
+    }
+
+    if (!images) return allImages;
 
     topN(images.backdrops, 6).forEach((backdrop, index) => {
       allImages.push({
@@ -41,18 +61,20 @@ export const MovieImages = ({ images }) => {
     });
 
     return allImages;
-  }, [images]);
+  }, [images, posterPath, movieTitle]);
 
   const itemTemplate = (item) => {
     return (
       <img
         src={item.itemImageSrc}
         alt={item.alt}
+        onClick={() => fullscreenGalleria.current?.show()}
         style={{
           width: '100%',
-          maxHeight: '500px',
+          maxHeight: '450px',
           display: 'block',
           objectFit: 'contain',
+          cursor: 'zoom-in',
           backgroundColor: item.type === 'logo' ? '#1a1a1a' : 'transparent'
         }}
         onError={(e) => { e.target.style.display = 'none'; }}
@@ -60,14 +82,29 @@ export const MovieImages = ({ images }) => {
     );
   };
 
+  const fullscreenItemTemplate = (item) => (
+    <img
+      src={item.itemImageSrc}
+      alt={item.alt}
+      style={{
+        maxWidth: '100%',
+        maxHeight: '85vh',
+        display: 'block',
+        objectFit: 'contain',
+        backgroundColor: item.type === 'logo' ? '#1a1a1a' : 'transparent',
+      }}
+      onError={(e) => { e.target.style.display = 'none'; }}
+    />
+  );
+
   const thumbnailTemplate = (item) => {
     return (
       <img
         src={item.thumbnailImageSrc}
         alt={item.alt}
         style={{
-          width: '80px',
-          height: '60px',
+          width: '60px',
+          height: '45px',
           display: 'block',
           cursor: 'pointer',
           objectFit: 'cover'
@@ -77,6 +114,22 @@ export const MovieImages = ({ images }) => {
     );
   };
 
+  if (headless) {
+    return displayImages.length > 0 ? (
+      <Galleria
+        ref={fullscreenGalleria}
+        value={displayImages}
+        activeIndex={activeIndex}
+        onItemChange={(e) => setActiveIndex(e.index)}
+        fullScreen
+        circular
+        showItemNavigators
+        showThumbnails={false}
+        item={fullscreenItemTemplate}
+      />
+    ) : null;
+  }
+
   return (
     <Card className="movie-images mt-3">
       <div className="mb-3">
@@ -84,19 +137,31 @@ export const MovieImages = ({ images }) => {
       </div>
 
       {displayImages.length > 0 ? (
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '300px', margin: '0 auto' }}>
           <Galleria
             value={displayImages}
             activeIndex={activeIndex}
             onItemChange={(e) => setActiveIndex(e.index)}
             numVisible={4}
             circular
-            showItemNavigators
+            showItemNavigators={false}
             showThumbnails
+            showThumbnailNavigators
             item={itemTemplate}
             thumbnail={thumbnailTemplate}
             style={{ maxWidth: '100%' }}
             thumbnailsPosition="bottom"
+          />
+          <Galleria
+            ref={fullscreenGalleria}
+            value={displayImages}
+            activeIndex={activeIndex}
+            onItemChange={(e) => setActiveIndex(e.index)}
+            fullScreen
+            circular
+            showItemNavigators
+            showThumbnails={false}
+            item={fullscreenItemTemplate}
           />
         </div>
       ) : (
@@ -114,4 +179,4 @@ export const MovieImages = ({ images }) => {
       )}
     </Card>
   );
-};
+});

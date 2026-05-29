@@ -3,7 +3,7 @@ import { Carousel } from 'primereact/carousel';
 import { MovieCard } from './movie-card';
 import './movie-carousel.css';
 
-export const MovieCarousel = ({ movies, title = 'Movies' }) => {
+export const MovieCarousel = ({ movies, title = 'Movies', subtitle }) => {
   const responsiveOptions = [
     {
       breakpoint: '1400px',
@@ -17,17 +17,17 @@ export const MovieCarousel = ({ movies, title = 'Movies' }) => {
     },
     {
       breakpoint: '992px',
-      numVisible: 3,
+      numVisible: 4,
       numScroll: 1
     },
     {
       breakpoint: '768px',
-      numVisible: 2,
+      numVisible: 3,
       numScroll: 1
     },
     {
       breakpoint: '576px',
-      numVisible: 1,
+      numVisible: 2,
       numScroll: 1
     }
   ];
@@ -39,7 +39,7 @@ export const MovieCarousel = ({ movies, title = 'Movies' }) => {
   if (!movies || movies.length === 0) {
     return (
       <div className="movie-carousel-empty">
-        <i className="pi pi-film" style={{ fontSize: '3rem', color: '#ccc' }}></i>
+        <i className="pi pi-film empty-state-icon"></i>
         <p>No movies available</p>
       </div>
     );
@@ -47,10 +47,18 @@ export const MovieCarousel = ({ movies, title = 'Movies' }) => {
 
   return (
     <div className="movie-carousel-container">
-      <h2 className="movie-carousel-title">{title}</h2>
+      <h2 className="movie-carousel-title">
+        {title}
+        {subtitle && (
+          <>
+            <i className="pi pi-angle-right movie-carousel-divider" aria-hidden="true" />
+            <span className="movie-carousel-subtitle">{subtitle}</span>
+          </>
+        )}
+      </h2>
       <Carousel
         value={movies}
-        numVisible={5}
+        numVisible={6}
         numScroll={1}
         responsiveOptions={responsiveOptions}
         itemTemplate={movieTemplate}

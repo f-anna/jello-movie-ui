@@ -9,6 +9,8 @@ import { Tag } from 'primereact/tag';
 import { Message } from 'primereact/message';
 import { searchTmdbMovies } from '../features/movies/api/search-api';
 import { importMovie, getMovieByTmdbId } from '../features/movies/api/movie-api';
+import { getImageUrl, PLACEHOLDER_POSTER } from '../lib/api-client';
+import './home-page.css';
 import './tmdb-search-page.css';
 
 const TmdbSearchPage = () => {
@@ -29,8 +31,7 @@ const TmdbSearchPage = () => {
     try {
       const data = await searchTmdbMovies(query, page);
       const searchResults = data.results || [];
-      
-      // For imported movies, fetch their database IDs
+
       const resultsWithIds = await Promise.all(
         searchResults.map(async (movie) => {
           if (movie.isImported) {
@@ -45,7 +46,7 @@ const TmdbSearchPage = () => {
           return movie;
         })
       );
-      
+
       setResults(resultsWithIds);
       setCurrentPage(data.page || 1);
       setTotalResults(data.totalResults || 0);
@@ -68,23 +69,20 @@ const TmdbSearchPage = () => {
   }, [query, performSearch]);
 
   const handlePageChange = (event) => {
-    const newPage = event.page + 1; // PrimeReact uses 0-based index
+    const newPage = event.page + 1;
     performSearch(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleMovieClick = async (movie) => {
-    // If movie is already imported, navigate directly
     if (movie.isImported && movie.id) {
       navigate(`/movie/${movie.id}`);
       return;
     }
 
-    // Otherwise, import it first
     setImportingIds(prev => new Set(prev).add(movie.tmdbId));
     try {
       const importedMovie = await importMovie(movie.tmdbId);
-      // Navigate to the newly imported movie
       navigate(`/movie/${importedMovie.id}`);
     } catch (error) {
       console.error('Import error:', error);
@@ -111,10 +109,20 @@ const TmdbSearchPage = () => {
 
   return (
     <div className="tmdb-search-page">
+      <div className="tmdb-search-banner">
+        <div className="tmdb-search-banner-text">
+          <h1>Search TMDB</h1>
+          <p>Find movies from The Movie Database</p>
+        </div>
+        <img
+          src="/jellojelly_transparent.png"
+          alt="JelloMovie"
+          className="tmdb-search-banner-logo"
+        />
+      </div>
       <div className="container mx-auto p-4">
         <div className="search-header mb-4">
-          <h1 className="text-3xl font-bold mb-3">Search TMDB</h1>
-          
+
           <div className="flex gap-2 mb-3 align-items-center">
             <span className="p-input-icon-left flex-1">
               <i className="pi pi-search" style={{ left: '0.75rem' }} />
@@ -130,6 +138,7 @@ const TmdbSearchPage = () => {
             <Button
               label="Search"
               icon="pi pi-search"
+              className=""
               onClick={handleSearch}
               disabled={!searchInput.trim()}
             />
@@ -154,13 +163,19 @@ const TmdbSearchPage = () => {
             <ProgressSpinner />
           </div>
         ) : results.length === 0 ? (
-          <Message severity="warn" text="No results found" />
+          query ? (
+            <Message
+              severity="info"
+              text={`No results found for "${query}".`}
+              className="w-full mt-3"
+            />
+          ) : null
         ) : (
           <>
             <div className="tmdb-results-grid">
               {results.map((movie) => (
-                <Card 
-                  key={movie.tmdbId} 
+                <Card
+                  key={movie.tmdbId}
                   className={`tmdb-result-card ${importingIds.has(movie.tmdbId) ? 'importing' : ''}`}
                   onClick={() => !importingIds.has(movie.tmdbId) && handleMovieClick(movie)}
                   style={{ cursor: importingIds.has(movie.tmdbId) ? 'wait' : 'pointer' }}
@@ -168,37 +183,37 @@ const TmdbSearchPage = () => {
                   <div className="tmdb-result-content">
                     <div className="tmdb-result-poster">
                       <img
-                        src={movie.posterPath ?? '/placeholder-poster.png'}
+                        src={getImageUrl(movie.posterPath)}
                         alt={movie.title}
                         loading="lazy"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = '/placeholder-poster.png';
+                          e.target.src = PLACEHOLDER_POSTER;
                         }}
                       />
                       {importingIds.has(movie.tmdbId) && (
                         <div className="importing-overlay">
-                          <ProgressSpinner style={{ width: '40px', height: '40px' }} />
+                          <ProgressSpinner className="spinner-md" />
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="tmdb-result-info">
                       <h3 className="tmdb-result-title">{movie.title}</h3>
-                      
+
                       {movie.originalTitle !== movie.title && (
                         <p className="tmdb-result-original-title">
                           {movie.originalTitle}
                         </p>
                       )}
-                      
+
                       <div className="tmdb-result-meta">
                         {movie.releaseDate && (
                           <span className="tmdb-result-year">
                             {new Date(movie.releaseDate).getFullYear()}
                           </span>
                         )}
-                        
+
                         {movie.voteAverage > 0 && (
                           <Tag
                             value={movie.voteAverage.toFixed(1)}

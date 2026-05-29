@@ -1,108 +1,145 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from 'primereact/card';
 import { Avatar } from 'primereact/avatar';
-import { Chip } from 'primereact/chip';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
-import { userService } from '../../users/api/user-api';
+import { followService } from '../api/follow-api';
 import { useAuth } from '../context/auth-context';
+import { getImageUrl } from '../../../lib/api-client';
+import { getInitials } from '../../../lib/utils';
 import './users-list.css';
 
-export const UsersList = () => {
-  const [users, setUsers] = useState([]);
+const TOP_COUNT = 5;
+
+export const UsersList = ({ onContentChange }) => {
+  const { isAuthenticated } = useAuth();
+  const [topUsers, setTopUsers] = useState([]);
+  const [topLists, setTopLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchTop = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await userService.getAllUsers();
-        setUsers(data);
+        const [users, lists] = await Promise.all([
+          followService.getTopUsers(TOP_COUNT),
+          followService.getTopLists(TOP_COUNT),
+        ]);
+        setTopUsers(users || []);
+        setTopLists(lists || []);
       } catch (err) {
-        console.error('Error fetching users:', err);
+        console.error('Error fetching top users/lists:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (isAuthenticated) {
-      fetchUsers();
-    } else {
-      setLoading(false);
-    }
+    fetchTop();
   }, [isAuthenticated]);
 
-  const handleUserClick = (userId) => {
-    navigate(`/user/${userId}`);
-  };
+  const hasUsers = topUsers.length > 0;
+  const hasLists = topLists.length > 0;
+  const hasContent = hasUsers || hasLists;
 
-  const getInitials = (email) => {
-    if (!email) return '?';
-    return email.substring(0, 2).toUpperCase();
-  };
+  useEffect(() => {
+    if (loading) return;
+    if (onContentChange) onContentChange(hasContent);
+  }, [hasContent, loading, onContentChange]);
 
   if (!isAuthenticated) return null;
 
   if (loading) {
     return (
-      <div className="users-list-loading">
-        <ProgressSpinner style={{ width: '50px', height: '50px' }} />
+      <div className="top-sidebar-loading">
+        <ProgressSpinner className="spinner-sm" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="users-list-error">
+      <div className="top-sidebar-error">
         <Message severity="error" text={error} />
       </div>
     );
   }
 
-  if (!users || users.length === 0) {
-    return (
-      <div className="users-list-empty">
-        <Message severity="info" text="No users found" />
-      </div>
-    );
-  }
+  if (!hasContent) return null;
 
   return (
-    <div className="users-list-container">
-      <h2 className="users-list-title">
-        <i className="pi pi-users" /> Users
-      </h2>
-      <div className="users-list-grid">
-        {users.map((user) => (
-          <Card
-            key={user.id}
-            className="user-card"
-            onClick={() => handleUserClick(user.id)}
-          >
-            <div className="user-card-header" />
-            <div className="user-card-body">
-              <Avatar
-                label={getInitials(user.email)}
-                size="xlarge"
-                shape="circle"
-                className="user-avatar"
-              />
-              <h3 className="user-email">{user.email}</h3>
-              <Chip
-                label="View Profile"
-                icon="pi pi-arrow-right"
-                className="user-card-chip"
-              />
-            </div>
-          </Card>
-        ))}
-      </div>
+    <div className="top-sidebar">
+      {hasUsers && (
+        <section className="top-sidebar-block">
+          <h3 className="top-sidebar-title">
+            <i className="pi pi-users" /> Most followed users
+          </h3>
+          <ul className="top-sidebar-list">
+            {topUsers.map(({ user, followerCount }) => (
+              <li
+                key={user.id}
+                className="top-sidebar-item"
+                onClick={() => navigate(`/user/${user.id}`)}
+              >
+                <Avatar
+                  image={user.profilePictureUrl ? getImageUrl(user.profilePictureUrl) : undefined}
+                  label={user.profilePictureUrl ? undefined : getInitials(user.userName || user.email)}
+                  shape="circle"
+                  className="top-sidebar-avatar"
+                />
+                <div className="top-sidebar-item-text">
+                  <span className="top-sidebar-item-name">{user.userName || user.email}</span>
+                  <span className="top-sidebar-item-meta">
+                    <i className="pi pi-user-plus" /> {followerCount ?? 0}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {hasLists && (
+        <section className="top-sidebar-block">
+          <h3 className="top-sidebar-title">
+            <i className="pi pi-bookmark" /> Most followed lists
+          </h3>
+          <ul className="top-sidebar-list">
+            {topLists.map(({ list, followerCount }) => (
+              <li
+                key={list.id}
+                className="top-sidebar-item"
+                onClick={() => navigate(`/list/${list.id}`)}
+              >
+                <div className="top-sidebar-list-icon">
+                  <i className="pi pi-list" />
+                </div>
+                <div className="top-sidebar-item-text">
+                  <span className="top-sidebar-item-name" title={list.name}>{list.name}</span>
+                  <div className="top-sidebar-item-row">
+                    {list.user?.userName && (
+                      <span className="top-sidebar-item-author">
+                        <i className="pi pi-user" /> {list.user.userName}
+                      </span>
+                    )}
+                    <span className="top-sidebar-item-meta">
+                      <i className="pi pi-user-plus" /> {followerCount ?? 0}
+                    </span>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 };

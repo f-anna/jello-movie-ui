@@ -2,14 +2,16 @@
 
 .auth-layout {
   display: flex;
-  min-height: 100vh;
+  flex: 1;
+  margin-top: -1.5rem;
+  overflow: hidden;
 }
 
 /* ── Left branding panel ───────────────────────────────────────────── */
 
 .auth-brand-panel {
   flex: 0 0 42%;
-  background: linear-gradient(145deg, var(--primary-color) 0%, var(--primary-700, #1255a3) 60%, #0d3f7a 100%);
+  background: linear-gradient(145deg, var(--primary-400, #4f8fd9) 0%, var(--primary-500, #2c6fc6) 60%, var(--primary-700, #1255a3) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,11 +50,13 @@
   z-index: 1;
 }
 
-.auth-brand-icon {
-  font-size: 4rem;
+.auth-brand-logo {
+  height: 12rem;
+  width: auto;
   margin-bottom: 1.25rem;
   display: block;
-  opacity: 0.95;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .auth-brand-title {
@@ -161,8 +165,8 @@
     padding: 2.5rem 1.5rem;
   }
 
-  .auth-brand-icon {
-    font-size: 2.75rem;
+  .auth-brand-logo {
+    height: 4rem;
   }
 
   .auth-brand-title {

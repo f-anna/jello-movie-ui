@@ -1,1 +1,0 @@
-export { useMovieDetails } from './useMovieDetails';

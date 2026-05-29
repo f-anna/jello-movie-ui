@@ -3,7 +3,6 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* Use PrimeReact theme variables instead of hardcoded colors */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -45,7 +44,7 @@ a {
 }
 
 a:hover {
-  color: var(--primary-color-text);
+  color: var(--primary-300, #6ea8d8);
 }
 
 
@@ -60,17 +59,17 @@ a.active-link {
   border-bottom: 2px solid var(--primary-color);
 }
 
-/* Override default button styles to work with PrimeReact */
 button {
   font-family: inherit;
 }
 
 .app-container {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--surface-ground);
 }
 
-/* Utility classes that complement PrimeFlex */
 .card {
   background-color: var(--surface-card);
   border: 1px solid var(--surface-border);
@@ -107,4 +106,56 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--surface-500);
 }
+
+.p-galleria-item-prev,
+.p-galleria-item-next {
+  background-color: var(--primary-color) !important;
+  color: #fff !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 50% !important;
+  opacity: 0.85;
+}
+
+.p-galleria-item-prev:hover,
+.p-galleria-item-next:hover {
+  background-color: var(--primary-600, #1f5db0) !important;
+  opacity: 1;
+}
+
+.p-button.p-button:not(.p-button-icon-only):not(.p-button-rounded) {
+  border-radius: 9999px;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.p-button.p-button-icon-only,
+.p-button.p-button-rounded {
+  border-radius: 50%;
+}
+
+.list-badge {
+  color: #fff !important;
+}
+
+.list-badge-custom      { background: #64748b !important; }
+.list-badge-completed   { background: #16a34a !important; }
+.list-badge-watching    { background: #0284c7 !important; }
+.list-badge-planned     { background: #d97706 !important; }
+.list-badge-dropped     { background: #dc2626 !important; }
+.list-badge-favorite    { background: #db2777 !important; }
+.list-badge-bookmarked  { background: #7c3aed !important; }
+
+.spinner-xs { width: 30px; height: 30px; }
+.spinner-sm { width: 32px; height: 32px; }
+.spinner-md { width: 40px; height: 40px; }
+.spinner-lg { width: 50px; height: 50px; }
+
+.empty-state-icon    { font-size: 3rem; color: #ccc; }
+.empty-state-icon-sm { font-size: 2rem; color: #ccc; }
+
+.dialog-sm { width: 400px; }
+.dialog-md { width: 450px; }
+.dialog-lg { width: 500px; }
+
 

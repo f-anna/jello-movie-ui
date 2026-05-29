@@ -43,7 +43,7 @@ const LoginPage = () => {
       {/* Left branding panel */}
       <div className="auth-brand-panel">
         <div className="auth-brand-content">
-          <i className="pi pi-film auth-brand-icon" />
+          <img src="/jellojelly_transparent.png" alt="JelloMovie" className="auth-brand-logo" />
           <h1 className="auth-brand-title">JelloMovie</h1>
           <p className="auth-brand-tagline">Track, discover, and share your movie journey.</p>
         </div>

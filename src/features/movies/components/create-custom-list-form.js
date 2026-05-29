@@ -78,7 +78,7 @@ export const CreateCustomListForm = ({ visible, onHide, onSuccess }) => {
     <Dialog
       header="Create Custom List"
       visible={visible}
-      style={{ width: '450px' }}
+      className="dialog-md"
       footer={dialogFooter}
       onHide={handleCancel}
       modal

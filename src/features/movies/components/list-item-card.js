@@ -9,6 +9,8 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Dialog } from 'primereact/dialog';
 import { listService } from '../api/list-api';
 import { AddToListDialog } from './add-to-list-dialog';
+import { getImageUrl, PLACEHOLDER_POSTER } from '../../../lib/api-client';
+import { getRatingColor } from '../../../lib/utils';
 import './list-item-card.css';
 
 export const ListItemCard = ({ movie, listId, listItem, onRemoved, readOnly = false }) => {
@@ -19,13 +21,7 @@ export const ListItemCard = ({ movie, listId, listItem, onRemoved, readOnly = fa
   const [deletingComment, setDeletingComment] = useState(false);
   const toast = useRef(null);
 
-  const posterUrl = movie.posterPath ?? '/placeholder-poster.png';
-
-  const getRatingColor = (rating) => {
-    if (rating >= 7) return 'success';
-    if (rating >= 5) return 'warning';
-    return 'danger';
-  };
+  const posterUrl = getImageUrl(movie.posterPath);
 
   const handleRemoveFromList = () => {
     confirmDialog({
@@ -160,7 +156,7 @@ export const ListItemCard = ({ movie, listId, listItem, onRemoved, readOnly = fa
                 loading="lazy"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = '/placeholder-poster.png';
+                  e.target.src = PLACEHOLDER_POSTER;
                 }}
               />
             </Link>
@@ -267,7 +263,7 @@ export const ListItemCard = ({ movie, listId, listItem, onRemoved, readOnly = fa
       <Dialog
         header={`Comment for "${movie.title}"`}
         visible={showCommentDialog}
-        style={{ width: '500px' }}
+        className="dialog-lg"
         footer={commentDialogFooter}
         onHide={() => {
           setComment(listItem?.comment || '');
@@ -276,9 +272,6 @@ export const ListItemCard = ({ movie, listId, listItem, onRemoved, readOnly = fa
         modal
       >
         <div className="field">
-          <label htmlFor="comment" className="block mb-2">
-            Your comment:
-          </label>
           <InputTextarea
             id="comment"
             value={comment}

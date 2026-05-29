@@ -8,7 +8,6 @@ const authClient = axios.create({
 export const authApi = {
   login: async (credentials) => {
     await authClient.post('/auth/login', credentials);
-    // email frmom credentials
     return { email: credentials.email };
   },
 
@@ -27,5 +26,12 @@ export const authApi = {
 
   updatePassword: async (currentPassword, newPassword) => {
     await authClient.patch('/auth/password', { currentPassword, newPassword });
+  },
+
+  uploadProfilePicture: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await authClient.post('/auth/profile-picture', formData);
+    return data;
   },
 };
